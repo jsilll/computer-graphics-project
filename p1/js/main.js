@@ -1,24 +1,27 @@
+//  ---------------- Three.js Global Variables ---------------- //
+const clock = new THREE.Clock();
 var camera_front, camera_side, camera_top;
 var camera, scene, renderer;
 var geometry, mesh;
 
+//  ---------------- Controllers ---------------- //
 var object1;
 const position_controller = {
-    39: { pressed: false, vec: new THREE.Vector3(1, 0, 0) },
-    37: { pressed: false, vec: new THREE.Vector3(-1, 0, 0) },
-    38: { pressed: false, vec: new THREE.Vector3(0, 1, 0) },
-    40: { pressed: false, vec: new THREE.Vector3(0, -1, 0) },
-    67: { pressed: false, vec: new THREE.Vector3(0, 0, 1) },
-    68: { pressed: false, vec: new THREE.Vector3(0, 0, -1) },
+    39: { pressed: false, vec: new THREE.Vector3(1, 0, 0) }, // right
+    37: { pressed: false, vec: new THREE.Vector3(-1, 0, 0) }, // left
+    38: { pressed: false, vec: new THREE.Vector3(0, 1, 0) }, // up
+    40: { pressed: false, vec: new THREE.Vector3(0, -1, 0) }, // down
+    67: { pressed: false, vec: new THREE.Vector3(0, 0, 1) }, // 'c'
+    68: { pressed: false, vec: new THREE.Vector3(0, 0, -1) }, // 'd'
 }
 
 const rotation_controller = {
-    81: { pressde: false, vec: new THREE.Vector3(1, 0, 0) },
-    87: { pressde: false, vec: new THREE.Vector3(-1, 0, 0) },
-    65: { pressde: false, vec: new THREE.Vector3(0, 1, 0) },
-    83: { pressde: false, vec: new THREE.Vector3(0, -1, 0) },
-    90: { pressde: false, vec: new THREE.Vector3(0, 0, 1) },
-    88: { pressde: false, vec: new THREE.Vector3(0, 0, -1) },
+    81: { pressde: false, rotate: (obj, delta) => obj.rotateX(delta * 1) }, // q
+    87: { pressde: false, rotate: (obj, delta) => obj.rotateX(delta * -1) }, // w
+    65: { pressde: false, rotate: (obj, delta) => obj.rotateY(delta * 1) }, // a
+    83: { pressde: false, rotate: (obj, delta) => obj.rotateY(delta * -1) }, // s
+    90: { pressde: false, rotate: (obj, delta) => obj.rotateZ(delta * 1) }, // z 
+    88: { pressde: false, rotate: (obj, delta) => obj.rotateZ(delta * -1) }, // x
 }
 
 //  ---------------- Three.js Functions ---------------- //
@@ -58,20 +61,23 @@ function animate() {
 }
 
 function update() {
+    const delta = clock.getDelta();
+
+    // Update Position
     const obj1_velocity = new THREE.Vector3(0, 0, 0);
     Object.keys(position_controller).forEach((key) => {
         if (position_controller[key].pressed) {
             obj1_velocity.add(position_controller[key].vec);
         }
     });
-    object1.position.add(obj1_velocity.normalize());
-    const obj1_rotation = new THREE.Vector3(0, 0, 0);
+    object1.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
+
+    // Update Rotation
     Object.keys(rotation_controller).forEach((key) => {
         if (rotation_controller[key].pressed) {
-            obj1_rotation.add(rotation_controller[key].vec);
+            rotation_controller[key].rotate(object1, delta);
         }
     });
-    // object1.rotation.add(obj1_rotation.normalize());
 }
 
 // ---------------- Scene ---------------- //
@@ -79,8 +85,10 @@ function update() {
 function setupScene() {
     'use strict';
     scene = new THREE.Scene();
+
     // Adding Axis to the Scene
     scene.add(new THREE.AxisHelper(50));
+
     // Creating an object
     var cube = new THREE.Object3D();
     var material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
@@ -88,8 +96,10 @@ function setupScene() {
     var mesh = new THREE.Mesh(geometry, material);
     cube.add(mesh);
     cube.position.set(0, 0, 0);
+
     // Adding Objects to the Scene
     scene.add(cube);
+
     // Defining objects to be manipulated
     object1 = cube;
 }
@@ -157,9 +167,7 @@ function onKeyUp(e) {
     if (position_controller[e.keyCode]) {
         position_controller[e.keyCode].pressed = false;
     }
-    if (position_controller[e.keyCode]) {
-        position_controller[e.keyCode].pressed = false;
+    if (rotation_controller[e.keyCode]) {
+        rotation_controller[e.keyCode].pressed = false;
     }
 }
-
-
