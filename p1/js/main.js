@@ -4,12 +4,21 @@ var geometry, mesh;
 
 var object1;
 const position_controller = {
-    39: { pressed: false, vec: [1, 0, 0] },
-    37: { pressed: false, vec: [-1, 0, 0] },
-    38: { pressed: false, vec: [0, 1, 0] },
-    40: { pressed: false, vec: [0, -1, 0] },
-    67: { pressed: false, vec: [0, 0, 1] },
-    68: { pressed: false, vec: [0, 0, -1] },
+    39: { pressed: false, vec: new THREE.Vector3(1, 0, 0) },
+    37: { pressed: false, vec: new THREE.Vector3(-1, 0, 0) },
+    38: { pressed: false, vec: new THREE.Vector3(0, 1, 0) },
+    40: { pressed: false, vec: new THREE.Vector3(0, -1, 0) },
+    67: { pressed: false, vec: new THREE.Vector3(0, 0, 1) },
+    68: { pressed: false, vec: new THREE.Vector3(0, 0, -1) },
+}
+
+const rotation_controller = {
+    81: { pressde: false, vec: new THREE.Vector3(1, 0, 0) },
+    87: { pressde: false, vec: new THREE.Vector3(-1, 0, 0) },
+    65: { pressde: false, vec: new THREE.Vector3(0, 1, 0) },
+    83: { pressde: false, vec: new THREE.Vector3(0, -1, 0) },
+    90: { pressde: false, vec: new THREE.Vector3(0, 0, 1) },
+    88: { pressde: false, vec: new THREE.Vector3(0, 0, -1) },
 }
 
 //  ---------------- Three.js Functions ---------------- //
@@ -34,8 +43,6 @@ function init() {
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
     window.addEventListener("resize", onResize);
-
-    render();
 }
 
 function render() {
@@ -46,18 +53,25 @@ function render() {
 function animate() {
     'use strict';
     requestAnimationFrame(animate);
+    update();
+    render();
+}
 
-    // Update obj1's position
+function update() {
     const obj1_velocity = new THREE.Vector3(0, 0, 0);
     Object.keys(position_controller).forEach((key) => {
         if (position_controller[key].pressed) {
-            obj1_velocity.add(new THREE.Vector3(...position_controller[key].vec));
+            obj1_velocity.add(position_controller[key].vec);
         }
     });
-
     object1.position.add(obj1_velocity.normalize());
-
-    render();
+    const obj1_rotation = new THREE.Vector3(0, 0, 0);
+    Object.keys(rotation_controller).forEach((key) => {
+        if (rotation_controller[key].pressed) {
+            obj1_rotation.add(rotation_controller[key].vec);
+        }
+    });
+    // object1.rotation.add(obj1_rotation.normalize());
 }
 
 // ---------------- Scene ---------------- //
@@ -65,10 +79,8 @@ function animate() {
 function setupScene() {
     'use strict';
     scene = new THREE.Scene();
-
     // Adding Axis to the Scene
     scene.add(new THREE.AxisHelper(50));
-
     // Creating an object
     var cube = new THREE.Object3D();
     var material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
@@ -76,10 +88,8 @@ function setupScene() {
     var mesh = new THREE.Mesh(geometry, material);
     cube.add(mesh);
     cube.position.set(0, 0, 0);
-
     // Adding Objects to the Scene
     scene.add(cube);
-
     // Defining objects to be manipulated
     object1 = cube;
 }
@@ -101,9 +111,6 @@ function createOrthoCamera(x, y, z) {
 function onResize() {
     'use strict';
     renderer.setSize(window.innerWidth, window.innerHeight);
-
-    // TODO: Bug, faz stretch quando a window faz resize
-
     if (window.innerHeight > 0 && window.innerWidth > 0) {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -117,7 +124,11 @@ function onKeyDown(e) {
         position_controller[e.keyCode].pressed = true;
         return;
     }
-
+    // Rotate Whole Object
+    if (rotation_controller[e.keyCode]) {
+        rotation_controller[e.keyCode].pressed = true;
+        return;
+    }
     switch (e.keyCode) {
         // Toggle Views
         case 49: // '1'
@@ -138,25 +149,14 @@ function onKeyDown(e) {
                 }
             });
             break;
-
-        // TODO: Rotation Handling
-        case 81: // 'q' 'Q'
-            break;
-        case 87: // 'w' 'W'
-            break;
-        case 65: // 'a' 'A'
-            break;
-        case 83: // 's' 'S'
-            break;
-        case 90: // 'z' 'Z'
-            break;
-        case 88: // 'x' 'X'
-            break;
     }
 }
 
 function onKeyUp(e) {
     'use strict';
+    if (position_controller[e.keyCode]) {
+        position_controller[e.keyCode].pressed = false;
+    }
     if (position_controller[e.keyCode]) {
         position_controller[e.keyCode].pressed = false;
     }
