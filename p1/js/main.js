@@ -25,6 +25,105 @@ const rotation_controller = {
     88: { pressde: false, rotate: (obj, delta) => obj.rotateZ(delta * -1) }, // x
 }
 
+//  ---------------- Object creation ------------------- //
+function createPrimitive(x, y, z, obj_color, obj_geometry, rot_x, rot_y, rot_z, obj_side) {
+    material = new THREE.MeshBasicMaterial({ color: obj_color, wireframe: true, side: obj_side});
+    geometry = obj_geometry;
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    mesh.rotation.x = rot_x;
+    mesh.rotation.y = rot_y;
+    mesh.rotation.z = rot_z;
+    return mesh;
+}
+
+function createTower(x, y, z) {
+    'use strict';
+
+    var tower = new THREE.Object3D();
+    
+    // box
+    mesh = createPrimitive(x, y, z, 0xf94848, new THREE.BoxGeometry(50, 50, 50, 10), 0, 0, 0, null);
+    tower.add(mesh);
+
+    // plane
+    mesh = createPrimitive(x, y + 35, z, 0xf97d48, new THREE.CircleGeometry(25, 10), 1.6, 0, 0, THREE.DoubleSide)
+    tower.add(mesh);
+
+    // // cone
+    mesh = createPrimitive(x, y + 65, z, 0x00ff00, new THREE.ConeGeometry(26, 35, 12), 0, 0, 0, null)
+    tower.add(mesh);
+
+    scene.add(tower);
+
+    tower.position.x = x;
+    tower.position.y = y;
+    tower.position.z = z;
+
+}
+
+function createPlanet(x, y, z) {
+    'use strict';
+    
+    var planet = new THREE.Object3D();
+    
+    // big sphere
+    mesh = createPrimitive(x, y, z, 0xf9c348, new THREE.SphereGeometry(40, 7, 7), 0, 0, 0, null);
+    planet.add(mesh);
+
+    // ring geometry
+    mesh = createPrimitive(x, y, z, 0xf89c47, new THREE.RingGeometry(70, 65, 20), 2, 0, 0, THREE.DoubleSide);
+    planet.add(mesh);
+
+    // small sphere
+    mesh = createPrimitive(x + 70, y + 15, z, 0xf9c348, new THREE.SphereGeometry(7, 7, 7), 0, 0, 0, null);
+    planet.add(mesh);
+
+    scene.add(planet);
+
+    planet.position.x = x;
+    planet.position.y = y;
+    planet.position.z = z;
+}
+
+function createAbstract(x, y, z) {
+
+    var abstract = new THREE.Object3D();
+
+    mesh = createPrimitive(x, y + 10, z, 0x47d6f8, new THREE.SphereGeometry(40, 10, 5, Math.PI * 0.1, Math.PI * 1.5, Math.PI * 0.1, Math.PI * 0.5), 0, 0, 0, null);
+    abstract.add(mesh);
+
+    class CustomSinCurve extends THREE.Curve {
+        constructor(scale) {
+          super();
+          this.scale = scale;
+        }
+        getPoint(t) {
+          const tx = t * 5 - 1.5;
+          const ty = Math.cos(3 * Math.PI * t - 0.5);
+          const tz = 0;
+          return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
+        }
+    }
+
+    mesh = createPrimitive(x + 15, y - 80, z - 15, 0x00ff00, new THREE.TubeGeometry(new CustomSinCurve(20), 20, 5, 8, false), 0, 1, 2, null);
+    abstract.add(mesh);
+
+    // small sphere
+    mesh = createPrimitive(x + 45, y - 90 , z + 4, 0xf9c348, new THREE.SphereGeometry(7, 7, 7), 0, 0, 0, null);
+    abstract.add(mesh);
+
+    scene.add(abstract);
+
+    abstract.position.x = x;
+    abstract.position.y = y;
+    abstract.position.z = z;
+
+    // Defining objects to be manipulated
+    target_object = abstract;
+
+}
+
 //  ---------------- Three.js Functions ---------------- //
 
 function init() {
@@ -38,9 +137,9 @@ function init() {
     setupScene();
 
     // Setting Up Cameras
-    camera_front = createOrthoCamera(0, 0, 100);
-    camera_side = createOrthoCamera(100, 0, 0);
-    camera_top = createOrthoCamera(0, 100, 0);
+    camera_front = createOrthoCamera(0, 0, 300);
+    camera_side = createOrthoCamera(300, 0, 0);
+    camera_top = createOrthoCamera(0, 300, 0);
     camera = camera_front; // default
 
     // Event Listeners for User Interactions
@@ -91,18 +190,11 @@ function setupScene() {
     scene.add(new THREE.AxisHelper(50));
 
     // Creating an object
-    var cube = new THREE.Object3D();
-    var material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-    var geometry = new THREE.BoxGeometry(50, 50, 50);
-    var mesh = new THREE.Mesh(geometry, material);
-    cube.add(mesh);
-    cube.position.set(0, 0, 0);
+    createTower(0, 0, 0);
 
-    // Adding Objects to the Scene
-    scene.add(cube);
+    createPlanet(50, 90, 50);
 
-    // Defining objects to be manipulated
-    target_object = cube;
+    createAbstract(50, 0, 10);
 }
 
 // ---------------- Cameras ---------------- //
