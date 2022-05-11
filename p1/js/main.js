@@ -93,19 +93,6 @@ function createAbstract(x, y, z) {
     mesh = createPrimitive(x, y + 10, z, 0x47d6f8, new THREE.SphereGeometry(40, 10, 5, Math.PI * 0.1, Math.PI * 1.5, Math.PI * 0.1, Math.PI * 0.5), 0, 0, 0, null);
     abstract.add(mesh);
 
-    class CustomSinCurve extends THREE.Curve {
-        constructor(scale) {
-          super();
-          this.scale = scale;
-        }
-        getPoint(t) {
-          const tx = t * 5 - 1.5;
-          const ty = Math.cos(3 * Math.PI * t - 0.5);
-          const tz = 0;
-          return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
-        }
-    }
-
     mesh = createPrimitive(x + 15, y - 80, z - 15, 0x00ff00, new THREE.TubeGeometry(new CustomSinCurve(20), 20, 5, 8, false), 0, 1, 2, null);
     abstract.add(mesh);
 
@@ -122,6 +109,106 @@ function createAbstract(x, y, z) {
     // Defining objects to be manipulated
     target_object = abstract;
 
+}
+
+function createMoustache(x, y, z) {
+
+    var moustache = new THREE.Object3D();
+
+    // tube
+    mesh = createPrimitive(x, y, z, 0x6425ff, new THREE.TubeGeometry(new CustomSinCurve(20), 20, 5, 8, false), 0, 0, 0, null)
+    moustache.add(mesh);
+
+    // sphere
+    mesh = createPrimitive(x + 21, y - 15, z, 0xFF00FF, new THREE.SphereGeometry(15, 32, 16), 0, 0, 0, false);
+    moustache.add(mesh);
+
+    // left cylinder
+    mesh = createPrimitive(x - 30, y + 17, z, 0xf9c348, new THREE.CylinderGeometry(20, 20, 10, 32), 0, 0, Math.PI /2, false);
+    moustache.add(mesh);
+
+    // right cylinder
+    mesh = createPrimitive(x + 70, y + 17, z, 0xf9c348, new THREE.CylinderGeometry(20, 20, 10, 32), 0, 0, Math.PI /2, false);
+    moustache.add(mesh);
+
+    scene.add(moustache);
+}
+
+function createIceCream(x, y, z) {
+
+    var iceCream = new THREE.Object3D();
+
+    // cone
+    mesh = createPrimitive(x, y, z, 0xf9c348, new THREE.ConeGeometry(30, 70, 32), 0, 0, Math.PI, false);
+    iceCream.add(mesh);
+
+    // sphere
+    mesh = createPrimitive(x, y + 45, z, 0xA52A2A, new THREE.SphereGeometry(30, 32, 16), 0, 0, 0, false);
+    iceCream.add(mesh);
+
+    // torus
+    mesh = createPrimitive(x, y, z, 0x0076DC, new THREE.TorusGeometry(30, 15, 16, 100), Math.PI / 2, 0, 0, false);
+    iceCream.add(mesh);
+
+    scene.add(iceCream);
+}
+
+function createCurvedTube(x, y, z) {
+
+    var curvedTube = new THREE.Object3D();
+
+    mesh = createPrimitive(x, y, z, 0x812458, new THREE.BoxGeometry(30, 75, 50, 4), 0, 0, 0, null);
+    curvedTube.add(mesh);
+
+    mesh = createPrimitive(x + 37, y - 15, z, 0x455797, new THREE.ConeGeometry(20, 45, 22), 0, 0, Math.PI, false);
+    curvedTube.add(mesh);
+
+    mesh = createPrimitive(x, y + 45, z, 0x637872, new THREE.TorusGeometry(15, 5, 16, 100), Math.PI / 2, 0, 0, false);
+    curvedTube.add(mesh);
+
+    mesh = createPrimitive(x + 50, y + 30, z, 0xFFFFFF, new THREE.ParametricGeometry(paraFunction, 8, 8), Math.PI / 2, Math.PI / 2, 0, false);
+    curvedTube.add(mesh);
+
+    scene.add(curvedTube);
+}
+
+//  ---------------- Auxiliary function to ParametricGeometry ---------------- //
+var paraFunction = function (u, v) {
+
+    u *= Math.PI;
+    v *= 2 * Math.PI;
+    u = u * 2;
+
+    let x;
+    let z;
+
+    if (u < Math.PI) {
+        x = 3 * Math.cos(u) * (1 + Math.sin(u)) + (2 * (1 - Math.cos(u) / 2)) * Math.cos(u) * Math.cos(v);
+        z = -8 * Math.sin(u) - 2 * (1 - Math.cos(u) / 2) * Math.sin(u) * Math.cos(v);
+    } else {
+        x = 3 * Math.cos(u) * (1 + Math.sin(u)) + (2 * (1 - Math.cos(u) / 2)) * Math.cos(v + Math.PI);
+        z = -8 * Math.sin(u);
+    }
+
+    const y = -2 * (1 - Math.cos(u) / 2) * Math.sin(v);
+
+    return new THREE.Vector3( x, y, z ).multiplyScalar(3);
+
+}
+
+//  ---------------- Auxiliary function to TubeGeometry ---------------- //
+
+class CustomSinCurve extends THREE.Curve {
+    constructor(scale) {
+        super();
+        this.scale = scale;
+    }
+    getPoint(t) {
+        const tx = t * 5 - 1.5;
+        const ty = Math.cos(2 * Math.PI * t);
+        const tz = 0;
+        return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
+    }
 }
 
 //  ---------------- Three.js Functions ---------------- //
@@ -195,6 +282,12 @@ function setupScene() {
     createPlanet(50, 90, 50);
 
     createAbstract(50, 0, 10);
+
+    createMoustache(-150, 10, 10);
+
+    createIceCream(-150, -150, 80);
+
+    createCurvedTube(-55, -175, 80);
 }
 
 // ---------------- Cameras ---------------- //
