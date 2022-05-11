@@ -5,7 +5,8 @@ var camera, scene, renderer;
 var geometry, mesh;
 
 //  ---------------- Controllers ---------------- //
-var object1;
+var target_object;
+
 const position_controller = {
     39: { pressed: false, vec: new THREE.Vector3(1, 0, 0) }, // right
     37: { pressed: false, vec: new THREE.Vector3(-1, 0, 0) }, // left
@@ -56,11 +57,11 @@ function render() {
 function animate() {
     'use strict';
     requestAnimationFrame(animate);
-    update();
+    updateScene();
     render();
 }
 
-function update() {
+function updateScene() {
     const delta = clock.getDelta();
 
     // Update Position
@@ -70,12 +71,12 @@ function update() {
             obj1_velocity.add(position_controller[key].vec);
         }
     });
-    object1.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
+    target_object.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
 
     // Update Rotation
     Object.keys(rotation_controller).forEach((key) => {
         if (rotation_controller[key].pressed) {
-            rotation_controller[key].rotate(object1, delta);
+            rotation_controller[key].rotate(target_object, delta);
         }
     });
 }
@@ -101,7 +102,7 @@ function setupScene() {
     scene.add(cube);
 
     // Defining objects to be manipulated
-    object1 = cube;
+    target_object = cube;
 }
 
 // ---------------- Cameras ---------------- //
@@ -154,6 +155,8 @@ function onKeyDown(e) {
         // Toggle Wireframe / Solid Mode 
         case 52: // '4'
             scene.traverse(function (node) {
+                // TODO: é na boa este codigo estar aqui
+                // ou deve ir para o update
                 if (node instanceof THREE.Mesh) {
                     node.material.wireframe = !node.material.wireframe;
                 }
