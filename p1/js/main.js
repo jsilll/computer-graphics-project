@@ -8,6 +8,7 @@ var cameras = [];
 
 //  ---------------- Controllers ---------------- //
 var target_object;
+var target_object, mesh2, mesh3
 
 const position_controller = {
     39: { pressed: false, vec: new THREE.Vector3(1, 0, 0) },  // right
@@ -18,11 +19,17 @@ const position_controller = {
     68: { pressed: false, vec: new THREE.Vector3(0, 0, -1) }, // 'd'
 }
 
-const rotation_controller = {
+const target_object_controller = {
     81: { pressde: false, rotate: (obj, delta) => obj.rotateX(delta * 1) },  // q
     87: { pressde: false, rotate: (obj, delta) => obj.rotateX(delta * -1) }, // w
+}
+
+const mesh2_controller = {
     65: { pressde: false, rotate: (obj, delta) => obj.rotateY(delta * 1) },  // a
     83: { pressde: false, rotate: (obj, delta) => obj.rotateY(delta * -1) }, // s
+}
+
+const mesh3_controller = {
     90: { pressde: false, rotate: (obj, delta) => obj.rotateZ(delta * 1) },  // z 
     88: { pressde: false, rotate: (obj, delta) => obj.rotateZ(delta * -1) }, // x
 }
@@ -98,9 +105,15 @@ function createAbstract(x, y, z) {
     mesh = createPrimitive(x + 15, y - 80, z - 15, 0x00ff00, new THREE.TubeGeometry(new CustomSinCurve(20), 20, 5, 8, false), 0, 1, 2, null);
     abstract.add(mesh);
 
+    // TODO: we want to rotate this mesh properly
+    mesh2 = mesh;
+
     // small sphere
     mesh = createPrimitive(x + 45, y - 90, z + 4, 0xf9c348, new THREE.SphereGeometry(7, 7, 7), 0, 0, 0, null);
     abstract.add(mesh);
+
+    // TODO: we want to rotate this mesh properly
+    mesh3 = mesh;
 
     scene.add(abstract);
 
@@ -108,7 +121,7 @@ function createAbstract(x, y, z) {
     abstract.position.y = y;
     abstract.position.z = z;
 
-    // Defining objects to be manipulated
+    // TODO: we want to rotate this mesh properly
     target_object = abstract;
 
 }
@@ -283,9 +296,23 @@ function updatePositions() {
     target_object.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
 
     // Update Rotation
-    Object.keys(rotation_controller).forEach((key) => {
-        if (rotation_controller[key].pressed) {
-            rotation_controller[key].rotate(target_object, delta);
+    Object.keys(target_object_controller).forEach((key) => {
+        if (target_object_controller[key].pressed) {
+            target_object_controller[key].rotate(target_object, delta);
+        }
+    });
+
+    Object.keys(mesh2_controller).forEach((key) => {
+        if (mesh2_controller[key].pressed) {
+            console.log("entered here mesh2");
+            mesh2_controller[key].rotate(mesh2, delta);
+        }
+    });
+
+    Object.keys(mesh3_controller).forEach((key) => {
+        if (mesh3_controller[key].pressed) {
+            console.log("entered here mesh3");
+            mesh3_controller[key].rotate(mesh3, delta);
         }
     });
 }
@@ -330,16 +357,31 @@ function onResize() {
 
 function onKeyDown(e) {
     'use strict';
+
     // Move Whole Object
     if (position_controller[e.keyCode]) {
         position_controller[e.keyCode].pressed = true;
         return;
     }
-    // Rotate Whole Object
-    if (rotation_controller[e.keyCode]) {
-        rotation_controller[e.keyCode].pressed = true;
+
+    // Rotate target_object 
+    if (target_object_controller[e.keyCode]) {
+        target_object_controller[e.keyCode].pressed = true;
         return;
     }
+
+    // Rotate Mesh2 
+    if (mesh2_controller[e.keyCode]) {
+        mesh2_controller[e.keyCode].pressed = true;
+        return;
+    }
+
+    // Rotate Mesh3 
+    if (mesh3_controller[e.keyCode]) {
+        mesh3_controller[e.keyCode].pressed = true;
+        return;
+    }
+
     switch (e.keyCode) {
         // Toggle Camera Views
         case 49: // '1'
@@ -364,7 +406,16 @@ function onKeyUp(e) {
     if (position_controller[e.keyCode]) {
         position_controller[e.keyCode].pressed = false;
     }
-    if (rotation_controller[e.keyCode]) {
-        rotation_controller[e.keyCode].pressed = false;
+
+    if (target_object_controller[e.keyCode]) {
+        target_object_controller[e.keyCode].pressed = false;
+    }
+
+    if (mesh2_controller[e.keyCode]) {
+        mesh2_controller[e.keyCode].pressed = false;
+    }
+
+    if (mesh3_controller[e.keyCode]) {
+        mesh3_controller[e.keyCode].pressed = false;
     }
 }
