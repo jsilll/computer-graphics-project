@@ -8,20 +8,20 @@ var geometry, mesh;
 var target_object;
 
 const position_controller = {
-    39: { pressed: false, vec: new THREE.Vector3(1, 0, 0) }, // right
+    39: { pressed: false, vec: new THREE.Vector3(1, 0, 0) },  // right
     37: { pressed: false, vec: new THREE.Vector3(-1, 0, 0) }, // left
-    38: { pressed: false, vec: new THREE.Vector3(0, 1, 0) }, // up
+    38: { pressed: false, vec: new THREE.Vector3(0, 1, 0) },  // up
     40: { pressed: false, vec: new THREE.Vector3(0, -1, 0) }, // down
-    67: { pressed: false, vec: new THREE.Vector3(0, 0, 1) }, // 'c'
+    67: { pressed: false, vec: new THREE.Vector3(0, 0, 1) },  // 'c'
     68: { pressed: false, vec: new THREE.Vector3(0, 0, -1) }, // 'd'
 }
 
 const rotation_controller = {
-    81: { pressde: false, rotate: (obj, delta) => obj.rotateX(delta * 1) }, // q
+    81: { pressde: false, rotate: (obj, delta) => obj.rotateX(delta * 1) },  // q
     87: { pressde: false, rotate: (obj, delta) => obj.rotateX(delta * -1) }, // w
-    65: { pressde: false, rotate: (obj, delta) => obj.rotateY(delta * 1) }, // a
+    65: { pressde: false, rotate: (obj, delta) => obj.rotateY(delta * 1) },  // a
     83: { pressde: false, rotate: (obj, delta) => obj.rotateY(delta * -1) }, // s
-    90: { pressde: false, rotate: (obj, delta) => obj.rotateZ(delta * 1) }, // z 
+    90: { pressde: false, rotate: (obj, delta) => obj.rotateZ(delta * 1) },  // z 
     88: { pressde: false, rotate: (obj, delta) => obj.rotateZ(delta * -1) }, // x
 }
 
@@ -57,31 +57,11 @@ function render() {
 function animate() {
     'use strict';
     requestAnimationFrame(animate);
-    updateScene();
+    updatePositions();
     render();
 }
 
-function updateScene() {
-    const delta = clock.getDelta();
-
-    // Update Position
-    const obj1_velocity = new THREE.Vector3(0, 0, 0);
-    Object.keys(position_controller).forEach((key) => {
-        if (position_controller[key].pressed) {
-            obj1_velocity.add(position_controller[key].vec);
-        }
-    });
-    target_object.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
-
-    // Update Rotation
-    Object.keys(rotation_controller).forEach((key) => {
-        if (rotation_controller[key].pressed) {
-            rotation_controller[key].rotate(target_object, delta);
-        }
-    });
-}
-
-// ---------------- Scene ---------------- //
+// ---------------- Scene Setup ---------------- //
 
 function setupScene() {
     'use strict';
@@ -103,6 +83,36 @@ function setupScene() {
 
     // Defining objects to be manipulated
     target_object = cube;
+}
+
+// ---------------- Update Scene ---------------- //
+
+function updatePositions() {
+    const delta = clock.getDelta();
+
+    // Update Position
+    const obj1_velocity = new THREE.Vector3(0, 0, 0);
+    Object.keys(position_controller).forEach((key) => {
+        if (position_controller[key].pressed) {
+            obj1_velocity.add(position_controller[key].vec);
+        }
+    });
+    target_object.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
+
+    // Update Rotation
+    Object.keys(rotation_controller).forEach((key) => {
+        if (rotation_controller[key].pressed) {
+            rotation_controller[key].rotate(target_object, delta);
+        }
+    });
+}
+
+function updateDisplayType() {
+    scene.traverse((node) => {
+        if (node instanceof THREE.Mesh) {
+            node.material.wireframe = !node.material.wireframe;
+        }
+    });
 }
 
 // ---------------- Cameras ---------------- //
@@ -141,7 +151,7 @@ function onKeyDown(e) {
         return;
     }
     switch (e.keyCode) {
-        // Toggle Views
+        // Toggle Camera Views
         case 49: // '1'
             camera = camera_front;
             break;
@@ -154,13 +164,7 @@ function onKeyDown(e) {
 
         // Toggle Wireframe / Solid Mode 
         case 52: // '4'
-            scene.traverse(function (node) {
-                // TODO: é na boa este codigo estar aqui
-                // ou deve ir para o update
-                if (node instanceof THREE.Mesh) {
-                    node.material.wireframe = !node.material.wireframe;
-                }
-            });
+            updateDisplayType();
             break;
     }
 }
