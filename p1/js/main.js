@@ -102,14 +102,14 @@ function createAbstract(x, y, z) {
     mesh = createPrimitive(x, y + 10, z, 0x47d6f8, new THREE.SphereGeometry(40, 10, 5, Math.PI * 0.1, Math.PI * 1.5, Math.PI * 0.1, Math.PI * 0.5), 0, 0, 0, null);
     abstract.add(mesh);
 
-    mesh = createPrimitive(x + 15, y - 80, z - 15, 0x00ff00, new THREE.TubeGeometry(new CustomSinCurve(20), 20, 5, 8, false), 0, 1, 2, null);
+    mesh = createPrimitive(x, y - 60, z, 0x00ff00, new THREE.CylinderGeometry(15, 5, 80, 32), 0, 0, 0, null);
     abstract.add(mesh);
 
     // TODO: we want to rotate this mesh properly
     mesh2 = mesh;
 
     // small sphere
-    mesh = createPrimitive(x + 45, y - 90, z + 4, 0xf9c348, new THREE.SphereGeometry(7, 7, 7), 0, 0, 0, null);
+    mesh = createPrimitive(x + 35, y - 90, z + 4, 0xf9c348, new THREE.SphereGeometry(7, 7, 7), 0, 0, 0, null);
     abstract.add(mesh);
 
     // TODO: we want to rotate this mesh properly
