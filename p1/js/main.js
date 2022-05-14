@@ -34,8 +34,13 @@ const mesh3_controller = {
 }
 
 //  ---------------- Object creation ------------------- //
-function createPrimitive(x, y, z, obj_color, obj_geometry, rot_x, rot_y, rot_z, obj_side) {
-    material = new THREE.MeshBasicMaterial({ color: obj_color, wireframe: true, side: obj_side });
+function createPrimitive(x, y, z, obj_color, obj_geometry, rot_x, rot_y, rot_z, obj_side, texture) {
+    if (texture != null) {
+        material = new THREE.MeshBasicMaterial({ wireframe: true,side: obj_side, map : texture});
+    }
+    else {
+        material = new THREE.MeshBasicMaterial({ color: obj_color, wireframe: true, side: obj_side});
+    }
     geometry = obj_geometry;
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
@@ -51,7 +56,7 @@ function createTower(x, y, z) {
     var tower = new THREE.Object3D();
 
     // box
-    mesh = createPrimitive(x, y, z, 0xf94848, new THREE.BoxGeometry(70, 70, 70, 10), 0, 0, 0, null);
+    mesh = createPrimitive(x, y, z, 0xf94848, new THREE.BoxGeometry(70, 70, 70, 10), 0, 0, 0, null, null);
     tower.add(mesh);
 
     // plane
@@ -59,14 +64,14 @@ function createTower(x, y, z) {
     tower.add(mesh);
 
     // // cone
-    mesh = createPrimitive(x, y + 115, z, 0x00ff00, new THREE.ConeGeometry(45, 70, 12), 0, 0, 0, null)
+    mesh = createPrimitive(x, y + 115, z, 0x8bfc74, new THREE.ConeGeometry(45, 70, 12), 0, 0, 0, null, null);
     tower.add(mesh);
 
     scene.add(tower);
 
     tower.rotateX(Math.PI / 4);
     tower.rotateY(Math.PI / 7);
-    tower.rotateZ(Math.PI / 5);
+    tower.rotateZ(Math.PI / 3.5);
 
     tower.position.x = x;
     tower.position.y = y;
@@ -80,18 +85,20 @@ function createPlanet(x, y, z) {
     var planet = new THREE.Object3D();
 
     // big sphere
-    mesh = createPrimitive(x, y, z, 0xf9c348, new THREE.SphereGeometry(60, 10, 10), 0, 0, 0, null);
+    mesh = createPrimitive(x, y, z, null, new THREE.SphereGeometry(60, 40, 10), 0, 0, 0, null, new THREE.TextureLoader().load('textures/planet_texture.jpg'));
     planet.add(mesh);
 
     // ring geometry
-    mesh = createPrimitive(x, y, z, 0xf89c47, new THREE.RingGeometry(100, 110, 20), Math.PI / 3, 0, 0, THREE.DoubleSide);
+    mesh = createPrimitive(x, y, z, 0x7a33ff, new THREE.RingGeometry(100, 110, 50), Math.PI / 2, 0, 0, THREE.DoubleSide);
     planet.add(mesh);
 
     // small sphere
-    mesh = createPrimitive(x + 70, y + 15, z, 0xf9c348, new THREE.SphereGeometry(7, 7, 7), 0, 0, 0, null);
+    mesh = createPrimitive(x + 105, y + 20, z, 0xec54ba, new THREE.SphereGeometry(10, 10, 10), 0, 0, 0, null, null);
     planet.add(mesh);
 
     scene.add(planet);
+
+    planet.rotateX(Math.PI / 7);
 
     planet.position.x = x;
     planet.position.y = y;
@@ -112,7 +119,7 @@ function createAbstract(x, y, z) {
         }
     }
     
-    const path = new CustomCubicCurve(90);
+    const path = new CustomCubicCurve(150);
     const tubularSegments = 20;                                         // ui: tubularSegments
     const radius = 5;                                                   // ui: radius
     const radialSegments = 8;                                           // ui: radialSegments
@@ -124,9 +131,9 @@ function createAbstract(x, y, z) {
     target_object.position.y = y;
     target_object.position.z = z;
 
-    mesh1 = createPrimitive(x, y + 10, z, 0x47d6f8, new THREE.SphereGeometry(40, 10, 5, Math.PI * 0.1, Math.PI * 1.5, Math.PI * 0.1, Math.PI * 0.5), 0, 0, 0, null);
-    mesh2 = createPrimitive(x, y - 15, z, 0x00ff00, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), Math.PI, 0, Math.PI / 2, null);
-    mesh3 = createPrimitive(x + 40, y - 100, z, 0xf9c348, new THREE.SphereGeometry(7, 7, 7), 0, 0, 0, null);
+    mesh1 = createPrimitive(x, y, z, 0x47d6f8, new THREE.SphereGeometry(70, 20, 5, Math.PI / 10, Math.PI * 3/2, Math.PI / 10, Math.PI / 2), 0, 0, 0, THREE.DoubleSide, new THREE.TextureLoader().load('textures/abstract_texture.jpg'));
+    mesh2 = createPrimitive(x, y - 40, z, 0x00ff00, geometry, Math.PI, 0, Math.PI / 2, null,  new THREE.TextureLoader().load('textures/abstract_spiral.jpg'));
+    mesh3 = createPrimitive(x + 40, y - 190, z, 0xf9c348, new THREE.SphereGeometry(10, 7, 7), 0, 0, 0, null, new THREE.TextureLoader().load('textures/abstract_ball.jpg'));
     
     sub_target_object = new THREE.Object3D();
     sub_target_object.add(mesh2);
@@ -135,6 +142,8 @@ function createAbstract(x, y, z) {
     target_object.add(mesh1);
     target_object.add(sub_target_object);
 
+    target_object.rotateY(Math.PI / 3.5);
+    target_object.rotateX(-Math.PI / 8);
     scene.add(target_object);
 }
 
@@ -142,21 +151,40 @@ function createMoustache(x, y, z) {
 
     var moustache = new THREE.Object3D();
 
+    class CustomCosCurve extends THREE.Curve {
+        constructor(scale) {
+            super();
+            this.scale = scale;
+        }
+    
+        getPoint(t) {
+            const tx = t * 5;
+            const ty = Math.cos(2 * Math.PI * t);
+            const tz = 0;
+            return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
+        }
+    }
+
     // tube
-    mesh = createPrimitive(x, y, z, 0x6425ff, new THREE.TubeGeometry(new CustomSinCurve(20), 20, 5, 8, false), 0, 0, 0, null)
+    mesh = createPrimitive(x, y, z, null, new THREE.TubeGeometry(new CustomCosCurve(50), 20, 10, 8, false), 0, 0, 0, null, new THREE.TextureLoader().load('textures/moustache_texture.jpg'));
     moustache.add(mesh);
 
     // sphere
-    mesh = createPrimitive(x + 21, y - 15, z, 0xFF00FF, new THREE.SphereGeometry(15, 32, 16), 0, 0, 0, false);
+    mesh = createPrimitive(x + 125, y - 45, z, null, new THREE.SphereGeometry(20, 32, 16), 0, 0, 0, null, new THREE.TextureLoader().load('textures/moustache_ball.jpg'));
     moustache.add(mesh);
 
     // left cylinder
-    mesh = createPrimitive(x - 30, y + 17, z, 0xf9c348, new THREE.CylinderGeometry(20, 20, 10, 32), 0, 0, Math.PI / 2, false);
+    mesh = createPrimitive(x, y + 50, z, 0x8bfc74, new THREE.CylinderGeometry(30, 30, 20, 30), 0, 0, Math.PI / 2, null, null);
     moustache.add(mesh);
 
     // right cylinder
-    mesh = createPrimitive(x + 70, y + 17, z, 0xf9c348, new THREE.CylinderGeometry(20, 20, 10, 32), 0, 0, Math.PI / 2, false);
+    mesh = createPrimitive(x + 250, y + 50, z, 0x8bfc74, new THREE.CylinderGeometry(30, 30, 20, 30), 0, 0, Math.PI / 2, null, null);
     moustache.add(mesh);
+
+    moustache.rotateX(Math.PI / 10);
+    moustache.rotateY(Math.PI / 8);
+    moustache.rotateZ(Math.PI / 20);
+
 
     scene.add(moustache);
 }
@@ -166,37 +194,21 @@ function createIceCream(x, y, z) {
     var iceCream = new THREE.Object3D();
 
     // cone
-    mesh = createPrimitive(x, y, z, 0xf9c348, new THREE.ConeGeometry(30, 70, 32), 0, 0, Math.PI, false);
+    mesh = createPrimitive(x, y, z, 0x8234f3, new THREE.ConeGeometry(70, 140, 100), 0, 0, Math.PI, null, null);
     iceCream.add(mesh);
 
     // sphere
-    mesh = createPrimitive(x, y + 45, z, 0xA52A2A, new THREE.SphereGeometry(30, 32, 16), 0, 0, 0, false);
+    mesh = createPrimitive(x, y + 70, z, null, new THREE.SphereGeometry(70, 20, 20, 2 * Math.PI, 2 * Math.PI, 2 * Math.PI, Math.PI / 2), 0, 0, 0, null, new THREE.TextureLoader().load('textures/icecream_texture.jpg'));
     iceCream.add(mesh);
 
     // torus
-    mesh = createPrimitive(x, y, z, 0x0076DC, new THREE.TorusGeometry(30, 15, 16, 100), Math.PI / 2, 0, 0, false);
+    mesh = createPrimitive(x, y, z, 0x0076DC, new THREE.TorusGeometry(50, 20, 16, 100), Math.PI / 2, 0, 0, null, new THREE.TextureLoader().load('textures/icecream_torus.jpg'));
     iceCream.add(mesh);
 
+    iceCream.rotateX(Math.PI / 8);
+    iceCream.rotateZ(-Math.PI / 8);
+
     scene.add(iceCream);
-}
-
-function createCurvedTube(x, y, z) {
-
-    var curvedTube = new THREE.Object3D();
-
-    mesh = createPrimitive(x, y, z, 0x812458, new THREE.BoxGeometry(30, 75, 50, 4), 0, 0, 0, null);
-    curvedTube.add(mesh);
-
-    mesh = createPrimitive(x + 37, y - 15, z, 0x455797, new THREE.ConeGeometry(20, 45, 22), 0, 0, Math.PI, false);
-    curvedTube.add(mesh);
-
-    mesh = createPrimitive(x, y + 45, z, 0x637872, new THREE.TorusGeometry(15, 5, 16, 100), Math.PI / 2, 0, 0, false);
-    curvedTube.add(mesh);
-
-    mesh = createPrimitive(x + 50, y + 30, z, 0xFFFFFF, new THREE.ParametricGeometry(paraFunction, 8, 8), Math.PI / 2, Math.PI / 2, 0, false);
-    curvedTube.add(mesh);
-
-    scene.add(curvedTube);
 }
 
 function createFlyingCat(x, y, z) {
@@ -215,29 +227,29 @@ function createFlyingCat(x, y, z) {
         }
       }
       
-      const path = new CustomCubicCurve(90);
+      const path = new CustomCubicCurve(170);
       const tubularSegments = 30;  // ui: tubularSegments
-      const radius = 4;  // ui: radius
+      const radius = 15;  // ui: radius
       const radialSegments = 8;  // ui: radialSegments
       const closed = false;  // ui: closed
       const geometry = new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed);
 
-    mesh = createPrimitive(x, y, z, 0x812458, new THREE.BoxGeometry(50, 50, 10, 8), 0, 0, 0, null);
+    mesh = createPrimitive(x + 215, y - 10, z, 0xfcc05e, new THREE.BoxGeometry(100, 100, 30, 10, 10, 10), 0, 0, 0, null, null);
     flyingCat.add(mesh);
 
-    mesh = createPrimitive(x - 120, y, z, 0xFFFFFF, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), 0, 0, 0, false);
+    mesh = createPrimitive(x, y, z, 0xfffc53, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), 0, 0, 0, null, null);
     flyingCat.add(mesh);
 
-    mesh = createPrimitive(x - 120, y - 10, z, 0x455797, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), 0, 0, 0, false);
+    mesh = createPrimitive(x, y - 30, z, 0x71fcf3, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), 0, 0, 0, null, null);
     flyingCat.add(mesh);
     
-    mesh = createPrimitive(x - 120, y - 20, z, 0xFFFFFF, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), 0, 0, 0, false);
+    mesh = createPrimitive(x, y - 60, z, 0x71fc88, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), 0, 0, 0, null, null);
     flyingCat.add(mesh);
     
-    mesh = createPrimitive(x + 15, y + 35, z, 0xFFFFFF, new THREE.ConeGeometry(10, 15, 4), 0, 0, 0, false);
+    mesh = createPrimitive(x + 180, y + 58, z, 0xfc6c52, new THREE.ConeGeometry(15, 30, 4), 0, 0, 0, null, null);
     flyingCat.add(mesh);
 
-    mesh = createPrimitive(x - 15, y + 35, z, 0xFFFFFF, new THREE.ConeGeometry(10, 15, 4), 0, 0, 0, false);
+    mesh = createPrimitive(x + 250, y + 58, z, 0xfc6c52, new THREE.ConeGeometry(15, 30, 4), 0, 0, 0, null, null);
     flyingCat.add(mesh);
 
     scene.add(flyingCat);
@@ -268,22 +280,6 @@ var paraFunction = function (u, v) {
 
 }
 
-//  ---------------- Auxiliary function to TubeGeometry ---------------- //
-
-class CustomSinCurve extends THREE.Curve {
-    constructor(scale) {
-        super();
-        this.scale = scale;
-    }
-
-    getPoint(t) {
-        const tx = t * 5 - 1.5;
-        const ty = Math.cos(2 * Math.PI * t);
-        const tz = 0;
-        return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
-    }
-}
-
 //  ---------------- Three.js Functions ---------------- //
 
 function init() {
@@ -297,9 +293,9 @@ function init() {
     setupScene();
 
     // Setting Up Cameras
-    cameras.push(createOrthoCamera(0, 0, 300));
-    cameras.push(createOrthoCamera(300, 0, 0));
-    cameras.push(createOrthoCamera(0, 300, 0));
+    cameras.push(createOrthoCamera(0, 0, 600));
+    cameras.push(createOrthoCamera(600, 0, 0));
+    cameras.push(createOrthoCamera(0, 600, 0));
     camera = cameras[0]; // default
 
     // Event Listeners for User Interactions
@@ -330,12 +326,12 @@ function setupScene() {
     scene.add(new THREE.AxisHelper(50));
 
     // Creating objects
-    createTower(-100, 100, - 30);
-    createPlanet(50, 90, 50);
-    createAbstract(50, 0, 70);
-    createMoustache(-150, 10, 150);
-    createIceCream(-150, -150, - 20);
-    createFlyingCat(20, -175, 80);
+    createTower(150, 0, 100);
+    createPlanet(50, 150, -100);
+    createAbstract(-20, 40, 0);
+    createMoustache(-350, 300, 0);
+    createIceCream(-200, - 300,  -100);
+    createFlyingCat(-50, -200, 150);
 }
 
 // ---------------- Update Scene ---------------- //
