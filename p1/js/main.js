@@ -52,18 +52,22 @@ function createTower(x, y, z) {
     var tower = new THREE.Object3D();
 
     // box
-    mesh = createPrimitive(x, y, z, 0xf94848, new THREE.BoxGeometry(50, 50, 50, 10), 0, 0, 0, null);
+    mesh = createPrimitive(x, y, z, 0xf94848, new THREE.BoxGeometry(70, 70, 70, 10), 0, 0, 0, null);
     tower.add(mesh);
 
     // plane
-    mesh = createPrimitive(x, y + 35, z, 0xf97d48, new THREE.CircleGeometry(25, 10), 1.6, 0, 0, THREE.DoubleSide)
+    mesh = createPrimitive(x, y + 60, z, 0xf97d48, new THREE.CircleGeometry(45, 10), Math.PI / 2, 0, 0, THREE.DoubleSide)
     tower.add(mesh);
 
     // // cone
-    mesh = createPrimitive(x, y + 65, z, 0x00ff00, new THREE.ConeGeometry(26, 35, 12), 0, 0, 0, null)
+    mesh = createPrimitive(x, y + 115, z, 0x00ff00, new THREE.ConeGeometry(45, 70, 12), 0, 0, 0, null)
     tower.add(mesh);
 
     scene.add(tower);
+
+    tower.rotateX(Math.PI / 4);
+    tower.rotateY(Math.PI / 7);
+    tower.rotateZ(Math.PI / 5);
 
     tower.position.x = x;
     tower.position.y = y;
@@ -77,11 +81,11 @@ function createPlanet(x, y, z) {
     var planet = new THREE.Object3D();
 
     // big sphere
-    mesh = createPrimitive(x, y, z, 0xf9c348, new THREE.SphereGeometry(40, 7, 7), 0, 0, 0, null);
+    mesh = createPrimitive(x, y, z, 0xf9c348, new THREE.SphereGeometry(60, 10, 10), 0, 0, 0, null);
     planet.add(mesh);
 
     // ring geometry
-    mesh = createPrimitive(x, y, z, 0xf89c47, new THREE.RingGeometry(70, 65, 20), 2, 0, 0, THREE.DoubleSide);
+    mesh = createPrimitive(x, y, z, 0xf89c47, new THREE.RingGeometry(100, 110, 20), Math.PI / 3, 0, 0, THREE.DoubleSide);
     planet.add(mesh);
 
     // small sphere
@@ -102,14 +106,37 @@ function createAbstract(x, y, z) {
     mesh = createPrimitive(x, y + 10, z, 0x47d6f8, new THREE.SphereGeometry(40, 10, 5, Math.PI * 0.1, Math.PI * 1.5, Math.PI * 0.1, Math.PI * 0.5), 0, 0, 0, null);
     abstract.add(mesh);
 
-    mesh = createPrimitive(x, y - 60, z, 0x00ff00, new THREE.CylinderGeometry(15, 5, 80, 32), 0, 0, 0, null);
+
+    class CustomCubicCurve extends THREE.Curve {
+        constructor(scale) {
+          super();
+          this.scale = scale;
+        }
+        getPoint(t) {
+          const tx = t;
+          const ty = Math.sin(t * 7.5) / 4;
+          const tz = 0;
+          return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
+        }
+      }
+      
+      const path = new CustomCubicCurve(90);
+      const tubularSegments = 20;  // ui: tubularSegments
+      const radius = 5;  // ui: radius
+      const radialSegments = 8;  // ui: radialSegments
+      const closed = false;  // ui: closed
+      const geometry = new THREE.TubeGeometry(
+          path, tubularSegments, radius, radialSegments, closed);
+
+    mesh = createPrimitive(x, y - 15, z, 0x00ff00, new THREE.TubeGeometry(
+        path, tubularSegments, radius, radialSegments, closed), Math.PI, 0, Math.PI / 2, null);
     abstract.add(mesh);
 
     // TODO: we want to rotate this mesh properly
     mesh2 = mesh;
 
     // small sphere
-    mesh = createPrimitive(x + 35, y - 90, z + 4, 0xf9c348, new THREE.SphereGeometry(7, 7, 7), 0, 0, 0, null);
+    mesh = createPrimitive(x + 40, y - 100, z, 0xf9c348, new THREE.SphereGeometry(7, 7, 7), 0, 0, 0, null);
     abstract.add(mesh);
 
     // TODO: we want to rotate this mesh properly
@@ -185,6 +212,51 @@ function createCurvedTube(x, y, z) {
     curvedTube.add(mesh);
 
     scene.add(curvedTube);
+}
+
+function createFlyingCat(x, y, z) {
+    var flyingCat = new THREE.Object3D();
+
+    class CustomCubicCurve extends THREE.Curve {
+        constructor(scale) {
+          super();
+          this.scale = scale;
+        }
+        getPoint(t) {
+          const tx = t;
+          const ty = Math.sin(t * 7.5) / 7;
+          const tz = 0;
+          return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
+        }
+      }
+      
+      const path = new CustomCubicCurve(90);
+      const tubularSegments = 30;  // ui: tubularSegments
+      const radius = 4;  // ui: radius
+      const radialSegments = 8;  // ui: radialSegments
+      const closed = false;  // ui: closed
+      const geometry = new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed);
+
+    mesh = createPrimitive(x, y, z, 0x812458, new THREE.BoxGeometry(50, 50, 10, 8), 0, 0, 0, null);
+    flyingCat.add(mesh);
+
+    mesh = createPrimitive(x - 120, y, z, 0xFFFFFF, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), 0, 0, 0, false);
+    flyingCat.add(mesh);
+
+    mesh = createPrimitive(x - 120, y - 10, z, 0x455797, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), 0, 0, 0, false);
+    flyingCat.add(mesh);
+    
+    mesh = createPrimitive(x - 120, y - 20, z, 0xFFFFFF, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), 0, 0, 0, false);
+    flyingCat.add(mesh);
+    
+    mesh = createPrimitive(x + 15, y + 35, z, 0xFFFFFF, new THREE.ConeGeometry(10, 15, 4), 0, 0, 0, false);
+    flyingCat.add(mesh);
+
+    mesh = createPrimitive(x - 15, y + 35, z, 0xFFFFFF, new THREE.ConeGeometry(10, 15, 4), 0, 0, 0, false);
+    flyingCat.add(mesh);
+
+    scene.add(flyingCat);
+
 }
 
 //  ---------------- Auxiliary function to ParametricGeometry ---------------- //
@@ -273,12 +345,12 @@ function setupScene() {
     scene.add(new THREE.AxisHelper(50));
 
     // Creating objects
-    createTower(0, 0, 0);
+    createTower(-100, 100, - 30);
     createPlanet(50, 90, 50);
-    createAbstract(50, 0, 10);
-    createMoustache(-150, 10, 10);
-    createIceCream(-150, -150, 80);
-    createCurvedTube(-55, -175, 80);
+    createAbstract(50, 0, 70);
+    createMoustache(-150, 10, 150);
+    createIceCream(-150, -150, - 20);
+    createFlyingCat(20, -175, 80);
 }
 
 // ---------------- Update Scene ---------------- //
