@@ -7,8 +7,7 @@ var geometry, mesh;
 var cameras = [];
 
 //  ---------------- Controllers ---------------- //
-var target_object;
-var target_object, mesh2, mesh3
+var target_object, sub_target_object, mesh1, mesh2, mesh3
 
 const position_controller = {
     39: { pressed: false, vec: new THREE.Vector3(1, 0, 0) },  // right
@@ -20,18 +19,18 @@ const position_controller = {
 }
 
 const target_object_controller = {
-    81: { pressde: false, rotate: (obj, delta) => obj.rotateX(delta * 1) },  // q
-    87: { pressde: false, rotate: (obj, delta) => obj.rotateX(delta * -1) }, // w
+    81: { pressed: false, rotate: (obj, delta) =>  obj.rotateX(delta)},  // q
+    87: { pressed: false, rotate: (obj, delta) =>  obj.rotateX(-delta)}, // w
 }
 
 const mesh2_controller = {
-    65: { pressde: false, rotate: (obj, delta) => obj.rotateY(delta * 1) },  // a
-    83: { pressde: false, rotate: (obj, delta) => obj.rotateY(delta * -1) }, // s
+    65: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, mesh1.position, new THREE.Vector3(0, 1, 0), delta, false) },  // a
+    83: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, mesh1.position, new THREE.Vector3(0, 1, 0), -delta, false) }, // s
 }
 
 const mesh3_controller = {
-    90: { pressde: false, rotate: (obj, delta) => obj.rotateZ(delta * 1) },  // z 
-    88: { pressde: false, rotate: (obj, delta) => obj.rotateZ(delta * -1) }, // x
+    90: { pressed: false, rotate: (obj, delta) =>  obj.rotateY(delta)},  // z 
+    88: { pressed: false, rotate: (obj, delta) =>  obj.rotateY(-delta)}, // x
 }
 
 //  ---------------- Object creation ------------------- //
@@ -100,57 +99,43 @@ function createPlanet(x, y, z) {
 }
 
 function createAbstract(x, y, z) {
-
-    var abstract = new THREE.Object3D();
-
-    mesh = createPrimitive(x, y + 10, z, 0x47d6f8, new THREE.SphereGeometry(40, 10, 5, Math.PI * 0.1, Math.PI * 1.5, Math.PI * 0.1, Math.PI * 0.5), 0, 0, 0, null);
-    abstract.add(mesh);
-
-
     class CustomCubicCurve extends THREE.Curve {
         constructor(scale) {
           super();
           this.scale = scale;
         }
         getPoint(t) {
-          const tx = t;
-          const ty = Math.sin(t * 7.5) / 4;
-          const tz = 0;
-          return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
+            const tx = t;
+            const ty = Math.sin(t * 7.5) / 4;
+            const tz = 0;
+            return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
         }
-      }
-      
-      const path = new CustomCubicCurve(90);
-      const tubularSegments = 20;  // ui: tubularSegments
-      const radius = 5;  // ui: radius
-      const radialSegments = 8;  // ui: radialSegments
-      const closed = false;  // ui: closed
-      const geometry = new THREE.TubeGeometry(
-          path, tubularSegments, radius, radialSegments, closed);
+    }
+    
+    const path = new CustomCubicCurve(90);
+    const tubularSegments = 20;                                         // ui: tubularSegments
+    const radius = 5;                                                   // ui: radius
+    const radialSegments = 8;                                           // ui: radialSegments
+    const closed = false;                                               // ui: closed
+    const geometry = new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed);
 
-    mesh = createPrimitive(x, y - 15, z, 0x00ff00, new THREE.TubeGeometry(
-        path, tubularSegments, radius, radialSegments, closed), Math.PI, 0, Math.PI / 2, null);
-    abstract.add(mesh);
+    target_object = new THREE.Object3D();
+    target_object.position.x = x;
+    target_object.position.y = y;
+    target_object.position.z = z;
 
-    // TODO: we want to rotate this mesh properly
-    mesh2 = mesh;
+    mesh1 = createPrimitive(x, y + 10, z, 0x47d6f8, new THREE.SphereGeometry(40, 10, 5, Math.PI * 0.1, Math.PI * 1.5, Math.PI * 0.1, Math.PI * 0.5), 0, 0, 0, null);
+    mesh2 = createPrimitive(x, y - 15, z, 0x00ff00, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), Math.PI, 0, Math.PI / 2, null);
+    mesh3 = createPrimitive(x + 40, y - 100, z, 0xf9c348, new THREE.SphereGeometry(7, 7, 7), 0, 0, 0, null);
+    
+    sub_target_object = new THREE.Object3D();
+    sub_target_object.add(mesh2);
+    sub_target_object.add(mesh3);
+    
+    target_object.add(mesh1);
+    target_object.add(sub_target_object);
 
-    // small sphere
-    mesh = createPrimitive(x + 40, y - 100, z, 0xf9c348, new THREE.SphereGeometry(7, 7, 7), 0, 0, 0, null);
-    abstract.add(mesh);
-
-    // TODO: we want to rotate this mesh properly
-    mesh3 = mesh;
-
-    scene.add(abstract);
-
-    abstract.position.x = x;
-    abstract.position.y = y;
-    abstract.position.z = z;
-
-    // TODO: we want to rotate this mesh properly
-    target_object = abstract;
-
+    scene.add(target_object);
 }
 
 function createMoustache(x, y, z) {
@@ -376,14 +361,12 @@ function updatePositions() {
 
     Object.keys(mesh2_controller).forEach((key) => {
         if (mesh2_controller[key].pressed) {
-            console.log("entered here mesh2");
-            mesh2_controller[key].rotate(mesh2, delta);
+            mesh2_controller[key].rotate(sub_target_object, delta);
         }
     });
 
     Object.keys(mesh3_controller).forEach((key) => {
         if (mesh3_controller[key].pressed) {
-            console.log("entered here mesh3");
             mesh3_controller[key].rotate(mesh3, delta);
         }
     });
@@ -490,4 +473,24 @@ function onKeyUp(e) {
     if (mesh3_controller[e.keyCode]) {
         mesh3_controller[e.keyCode].pressed = false;
     }
+}
+
+// ---------------- Helper Functions ---------------- //
+
+function rotateAroundPoint(obj, point, axis, theta, pointIsWorld){
+    pointIsWorld = (pointIsWorld === undefined)? false : pointIsWorld;
+
+    if(pointIsWorld){
+        obj.parent.localToWorld(obj.position); // compensate for world coordinate
+    }
+
+    obj.position.sub(point); // remove the offset
+    obj.position.applyAxisAngle(axis, theta); // rotate the POSITION
+    obj.position.add(point); // re-add the offset
+
+    if(pointIsWorld){
+        obj.parent.worldToLocal(obj.position); // undo world coordinates compensation
+    }
+
+    obj.rotateOnAxis(axis, theta); // rotate the OBJECT
 }
