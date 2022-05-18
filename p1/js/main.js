@@ -19,8 +19,8 @@ const position_controller = {
 }
 
 const target_object_controller = {
-    81: { pressed: false, rotate: (obj, delta) =>  obj.rotateX(delta)},  // q
-    87: { pressed: false, rotate: (obj, delta) =>  obj.rotateX(-delta)}, // w
+    81: { pressed: false, rotate: (obj, delta) => obj.rotateX(delta) },  // q
+    87: { pressed: false, rotate: (obj, delta) => obj.rotateX(-delta) }, // w
 }
 
 const mesh2_controller = {
@@ -29,17 +29,17 @@ const mesh2_controller = {
 }
 
 const mesh3_controller = {
-    90: { pressed: false, rotate: (obj, delta) =>  obj.rotateY(delta)},  // z 
-    88: { pressed: false, rotate: (obj, delta) =>  obj.rotateY(-delta)}, // x
+    90: { pressed: false, rotate: (obj, delta) => obj.rotateY(delta) },  // z 
+    88: { pressed: false, rotate: (obj, delta) => obj.rotateY(-delta) }, // x
 }
 
 //  ---------------- Object creation ------------------- //
 function createPrimitive(x, y, z, obj_color, obj_geometry, rot_x, rot_y, rot_z, obj_side, texture) {
     if (texture != null) {
-        material = new THREE.MeshBasicMaterial({ wireframe: true,side: obj_side, map : texture});
+        material = new THREE.MeshBasicMaterial({ wireframe: true, side: obj_side, map: texture });
     }
     else {
-        material = new THREE.MeshBasicMaterial({ color: obj_color, wireframe: true, side: obj_side});
+        material = new THREE.MeshBasicMaterial({ color: obj_color, wireframe: true, side: obj_side });
     }
     geometry = obj_geometry;
     mesh = new THREE.Mesh(geometry, material);
@@ -108,8 +108,8 @@ function createPlanet(x, y, z) {
 function createAbstract(x, y, z) {
     class CustomCubicCurve extends THREE.Curve {
         constructor(scale) {
-          super();
-          this.scale = scale;
+            super();
+            this.scale = scale;
         }
         getPoint(t) {
             const tx = t;
@@ -118,7 +118,7 @@ function createAbstract(x, y, z) {
             return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
         }
     }
-    
+
     const path = new CustomCubicCurve(150);
     const tubularSegments = 20;                                         // ui: tubularSegments
     const radius = 5;                                                   // ui: radius
@@ -131,14 +131,14 @@ function createAbstract(x, y, z) {
     target_object.position.y = y;
     target_object.position.z = z;
 
-    mesh1 = createPrimitive(x, y, z, 0x47d6f8, new THREE.SphereGeometry(70, 20, 5, Math.PI / 10, Math.PI * 3/2, Math.PI / 10, Math.PI / 2), 0, 0, 0, THREE.DoubleSide, new THREE.TextureLoader().load('textures/abstract_texture.jpg'));
-    mesh2 = createPrimitive(x, y - 40, z, 0x00ff00, geometry, Math.PI, 0, Math.PI / 2, null,  new THREE.TextureLoader().load('textures/abstract_spiral.jpg'));
+    mesh1 = createPrimitive(x, y, z, 0x47d6f8, new THREE.SphereGeometry(70, 20, 5, Math.PI / 10, Math.PI * 3 / 2, Math.PI / 10, Math.PI / 2), 0, 0, 0, THREE.DoubleSide, new THREE.TextureLoader().load('textures/abstract_texture.jpg'));
+    mesh2 = createPrimitive(x, y - 40, z, 0x00ff00, geometry, Math.PI, 0, Math.PI / 2, null, new THREE.TextureLoader().load('textures/abstract_spiral.jpg'));
     mesh3 = createPrimitive(x + 40, y - 190, z, 0xf9c348, new THREE.SphereGeometry(10, 7, 7), 0, 0, 0, null, new THREE.TextureLoader().load('textures/abstract_ball.jpg'));
-    
+
     sub_target_object = new THREE.Object3D();
     sub_target_object.add(mesh2);
     sub_target_object.add(mesh3);
-    
+
     target_object.add(mesh1);
     target_object.add(sub_target_object);
 
@@ -156,7 +156,7 @@ function createMoustache(x, y, z) {
             super();
             this.scale = scale;
         }
-    
+
         getPoint(t) {
             const tx = t * 5;
             const ty = Math.cos(2 * Math.PI * t);
@@ -216,23 +216,23 @@ function createFlyingCat(x, y, z) {
 
     class CustomCubicCurve extends THREE.Curve {
         constructor(scale) {
-          super();
-          this.scale = scale;
+            super();
+            this.scale = scale;
         }
         getPoint(t) {
-          const tx = t;
-          const ty = Math.sin(t * 7.5) / 7;
-          const tz = 0;
-          return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
+            const tx = t;
+            const ty = Math.sin(t * 7.5) / 7;
+            const tz = 0;
+            return new THREE.Vector3(tx, ty, tz).multiplyScalar(this.scale);
         }
-      }
-      
-      const path = new CustomCubicCurve(170);
-      const tubularSegments = 30;  // ui: tubularSegments
-      const radius = 15;  // ui: radius
-      const radialSegments = 8;  // ui: radialSegments
-      const closed = false;  // ui: closed
-      const geometry = new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed);
+    }
+
+    const path = new CustomCubicCurve(170);
+    const tubularSegments = 30;  // ui: tubularSegments
+    const radius = 15;  // ui: radius
+    const radialSegments = 8;  // ui: radialSegments
+    const closed = false;  // ui: closed
+    const geometry = new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed);
 
     mesh = createPrimitive(x + 215, y - 10, z, 0xfcc05e, new THREE.BoxGeometry(100, 100, 30, 10, 10, 10), 0, 0, 0, null, null);
     flyingCat.add(mesh);
@@ -242,10 +242,10 @@ function createFlyingCat(x, y, z) {
 
     mesh = createPrimitive(x, y - 30, z, 0x71fcf3, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), 0, 0, 0, null, null);
     flyingCat.add(mesh);
-    
+
     mesh = createPrimitive(x, y - 60, z, 0x71fc88, new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed), 0, 0, 0, null, null);
     flyingCat.add(mesh);
-    
+
     mesh = createPrimitive(x + 180, y + 58, z, 0xfc6c52, new THREE.ConeGeometry(15, 30, 4), 0, 0, 0, null, null);
     flyingCat.add(mesh);
 
@@ -330,7 +330,7 @@ function setupScene() {
     createPlanet(50, 150, -100);
     createAbstract(-20, 40, 0);
     createMoustache(-350, 300, 0);
-    createIceCream(-200, - 300,  -100);
+    createIceCream(-200, - 300, -100);
     createFlyingCat(-50, -200, 150);
 }
 
@@ -376,7 +376,7 @@ function updateDisplayType() {
     });
 }
 
-function updateAspectRation() {
+function updateAspectRatio() {
     cameras.forEach((c) => {
         c.left = window.innerWidth / - 2
         c.right = window.innerWidth / 2
@@ -403,7 +403,7 @@ function createOrthoCamera(x, y, z) {
 
 function onResize() {
     'use strict';
-    updateAspectRation();
+    updateAspectRatio();
 }
 
 function onKeyDown(e) {
@@ -473,10 +473,10 @@ function onKeyUp(e) {
 
 // ---------------- Helper Functions ---------------- //
 
-function rotateAroundPoint(obj, point, axis, theta, pointIsWorld){
-    pointIsWorld = (pointIsWorld === undefined)? false : pointIsWorld;
+function rotateAroundPoint(obj, point, axis, theta, pointIsWorld) {
+    pointIsWorld = (pointIsWorld === undefined) ? false : pointIsWorld;
 
-    if(pointIsWorld){
+    if (pointIsWorld) {
         obj.parent.localToWorld(obj.position); // compensate for world coordinate
     }
 
@@ -484,7 +484,7 @@ function rotateAroundPoint(obj, point, axis, theta, pointIsWorld){
     obj.position.applyAxisAngle(axis, theta); // rotate the POSITION
     obj.position.add(point); // re-add the offset
 
-    if(pointIsWorld){
+    if (pointIsWorld) {
         obj.parent.worldToLocal(obj.position); // undo world coordinates compensation
     }
 
