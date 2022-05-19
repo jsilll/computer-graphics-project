@@ -7,9 +7,9 @@ var geometry, mesh;
 var cameras = [];
 
 //  ---------------- Controllers ---------------- //
-var target_object, sub_target_object, mesh1, mesh2, mesh3
+var head_group, body_group, big_sphere;
 
-const position_controller = {
+const head_group_position_controller = {
     39: { pressed: false, vec: new THREE.Vector3(1, 0, 0) },  // right
     37: { pressed: false, vec: new THREE.Vector3(-1, 0, 0) }, // left
     38: { pressed: false, vec: new THREE.Vector3(0, 1, 0) },  // up
@@ -18,19 +18,22 @@ const position_controller = {
     68: { pressed: false, vec: new THREE.Vector3(0, 0, -1) }, // 'd'
 }
 
-const target_object_controller = {
+// Controls the whole object
+const head_group_rotation_controller = {
     81: { pressed: false, rotate: (obj, delta) => obj.rotateX(delta * 3) },  // q
     87: { pressed: false, rotate: (obj, delta) => obj.rotateX(-delta * 3) }, // w
 }
 
-const mesh2_controller = {
-    65: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, mesh1.position, new THREE.Vector3(0, 1, 0), delta * 3, false) },  // a
-    83: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, mesh1.position, new THREE.Vector3(0, 1, 0), -delta * 3, false) }, // s
+// Controls the tail and the small sphere primitives
+const body_group_rotation_controller = {
+    65: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, big_sphere.position, new THREE.Vector3(0, 1, 0), delta * 3, false) },  // a
+    83: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, big_sphere.position, new THREE.Vector3(0, 1, 0), -delta * 3, false) }, // s
 }
 
-const mesh3_controller = {
-    90: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, mesh1.position, new THREE.Vector3(1, 1, 1).normalize(), delta * 3, false) },   // z 
-    88: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, mesh1.position, new THREE.Vector3(1, 1, 1).normalize(), -delta * 3, false) },  // x
+// Controls the small sphere primitives
+const tail_group_rotation_controller = {
+    90: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, big_sphere.position, new THREE.Vector3(1, 1, 1).normalize(), delta * 3, false) },   // z 
+    88: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, big_sphere.position, new THREE.Vector3(1, 1, 1).normalize(), -delta * 3, false) },  // x
 }
 
 //  ---------------- Object creation ------------------- //
@@ -120,31 +123,34 @@ function createAbstract(x, y, z) {
     }
 
     const path = new CustomCubicCurve(150);
-    const tubularSegments = 20;                                         // ui: tubularSegments
-    const radius = 5;                                                   // ui: radius
-    const radialSegments = 8;                                           // ui: radialSegments
-    const closed = false;                                               // ui: closed
+    const closed = false;
+    const radialSegments = 8;
+    const radius = 5;
+    const tubularSegments = 20;
     const geometry = new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed);
 
-    target_object = new THREE.Object3D();
-    target_object.position.x = x;
-    target_object.position.y = y;
-    target_object.position.z = z;
+    var small_sphere = createPrimitive(x + 40, y - 190, z, 0xf9c348, new THREE.SphereGeometry(10, 7, 7), 0, 0, 0, null, new THREE.TextureLoader().load('textures/abstract_ball.jpg'));
+    var tube = createPrimitive(x, y - 40, z, 0x00ff00, geometry, Math.PI, 0, Math.PI / 2, null, new THREE.TextureLoader().load('textures/abstract_spiral.jpg'));
 
-    mesh1 = createPrimitive(x, y, z, 0x47d6f8, new THREE.SphereGeometry(70, 20, 5, Math.PI / 10, Math.PI * 3 / 2, Math.PI / 10, Math.PI / 2), 0, 0, 0, THREE.DoubleSide, new THREE.TextureLoader().load('textures/abstract_texture.jpg'));
-    mesh2 = createPrimitive(x, y - 40, z, 0x00ff00, geometry, Math.PI, 0, Math.PI / 2, null, new THREE.TextureLoader().load('textures/abstract_spiral.jpg'));
-    mesh3 = createPrimitive(x + 40, y - 190, z, 0xf9c348, new THREE.SphereGeometry(10, 7, 7), 0, 0, 0, null, new THREE.TextureLoader().load('textures/abstract_ball.jpg'));
+    // This is a global variable, for accessing it's position
+    big_sphere = createPrimitive(x, y, z, 0x47d6f8, new THREE.SphereGeometry(70, 20, 5, Math.PI / 10, Math.PI * 3 / 2, Math.PI / 10, Math.PI / 2), 0, 0, 0, THREE.DoubleSide, new THREE.TextureLoader().load('textures/abstract_texture.jpg'));
 
-    sub_target_object = new THREE.Object3D();
-    sub_target_object.add(mesh2);
-    sub_target_object.add(mesh3);
+    tail_group = new THREE.Object3D();
+    tail_group.add(small_sphere);
 
-    target_object.add(mesh1);
-    target_object.add(sub_target_object);
+    body_group = new THREE.Object3D();
+    body_group.add(tail_group);
+    body_group.add(tube);
 
-    target_object.rotateY(Math.PI / 3.5);
-    target_object.rotateX(-Math.PI / 8);
-    scene.add(target_object);
+    head_group = new THREE.Object3D();
+    head_group.add(body_group);
+    head_group.add(big_sphere);
+
+    head_group.position.x = x;
+    head_group.position.y = y;
+    head_group.position.z = z;
+
+    scene.add(head_group);
 }
 
 function createMoustache(x, y, z) {
@@ -346,29 +352,29 @@ function updatePositions() {
 
     // Update Position
     const obj1_velocity = new THREE.Vector3(0, 0, 0);
-    Object.keys(position_controller).forEach((key) => {
-        if (position_controller[key].pressed) {
-            obj1_velocity.add(position_controller[key].vec);
+    Object.keys(head_group_position_controller).forEach((key) => {
+        if (head_group_position_controller[key].pressed) {
+            obj1_velocity.add(head_group_position_controller[key].vec);
         }
     });
-    target_object.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
+    head_group.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
 
     // Update Rotation
-    Object.keys(target_object_controller).forEach((key) => {
-        if (target_object_controller[key].pressed) {
-            target_object_controller[key].rotate(target_object, delta);
+    Object.keys(head_group_rotation_controller).forEach((key) => {
+        if (head_group_rotation_controller[key].pressed) {
+            head_group_rotation_controller[key].rotate(head_group, delta);
         }
     });
 
-    Object.keys(mesh2_controller).forEach((key) => {
-        if (mesh2_controller[key].pressed) {
-            mesh2_controller[key].rotate(sub_target_object, delta);
+    Object.keys(body_group_rotation_controller).forEach((key) => {
+        if (body_group_rotation_controller[key].pressed) {
+            body_group_rotation_controller[key].rotate(body_group, delta);
         }
     });
 
-    Object.keys(mesh3_controller).forEach((key) => {
-        if (mesh3_controller[key].pressed) {
-            mesh3_controller[key].rotate(mesh3, delta);
+    Object.keys(tail_group_rotation_controller).forEach((key) => {
+        if (tail_group_rotation_controller[key].pressed) {
+            tail_group_rotation_controller[key].rotate(tail_group, delta);
         }
     });
 }
@@ -416,26 +422,26 @@ function onKeyDown(e) {
     'use strict';
 
     // Move Whole Object
-    if (position_controller[e.keyCode]) {
-        position_controller[e.keyCode].pressed = true;
+    if (head_group_position_controller[e.keyCode]) {
+        head_group_position_controller[e.keyCode].pressed = true;
         return;
     }
 
-    // Rotate target_object 
-    if (target_object_controller[e.keyCode]) {
-        target_object_controller[e.keyCode].pressed = true;
+    // Rotate Whole Object
+    if (head_group_rotation_controller[e.keyCode]) {
+        head_group_rotation_controller[e.keyCode].pressed = true;
         return;
     }
 
-    // Rotate Mesh2 
-    if (mesh2_controller[e.keyCode]) {
-        mesh2_controller[e.keyCode].pressed = true;
+    // Rotate Body Group 
+    if (body_group_rotation_controller[e.keyCode]) {
+        body_group_rotation_controller[e.keyCode].pressed = true;
         return;
     }
 
-    // Rotate Mesh3 
-    if (mesh3_controller[e.keyCode]) {
-        mesh3_controller[e.keyCode].pressed = true;
+    // Rotate Tail Group 
+    if (tail_group_rotation_controller[e.keyCode]) {
+        tail_group_rotation_controller[e.keyCode].pressed = true;
         return;
     }
 
@@ -460,20 +466,20 @@ function onKeyDown(e) {
 
 function onKeyUp(e) {
     'use strict';
-    if (position_controller[e.keyCode]) {
-        position_controller[e.keyCode].pressed = false;
+    if (head_group_position_controller[e.keyCode]) {
+        head_group_position_controller[e.keyCode].pressed = false;
     }
 
-    if (target_object_controller[e.keyCode]) {
-        target_object_controller[e.keyCode].pressed = false;
+    if (head_group_rotation_controller[e.keyCode]) {
+        head_group_rotation_controller[e.keyCode].pressed = false;
     }
 
-    if (mesh2_controller[e.keyCode]) {
-        mesh2_controller[e.keyCode].pressed = false;
+    if (body_group_rotation_controller[e.keyCode]) {
+        body_group_rotation_controller[e.keyCode].pressed = false;
     }
 
-    if (mesh3_controller[e.keyCode]) {
-        mesh3_controller[e.keyCode].pressed = false;
+    if (tail_group_rotation_controller[e.keyCode]) {
+        tail_group_rotation_controller[e.keyCode].pressed = false;
     }
 }
 
