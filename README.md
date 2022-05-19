@@ -6,8 +6,7 @@
 #### - João Silveira 95597
 #### - Tomás Nunes 96915
 ##
-##
-##
+
 ## Teclas:
 1 - Vista XY \
 2 - Vista YZ \
@@ -22,8 +21,6 @@ Setas esquerda e direita - Mover segundo eixo XX \
 Setas cima e baixo - Mover segundo eixo YY \
 C/D - Mover segundo eixo zz
 
-##
-##
 ##
 ## Observações:
 A vista inicial é uma vista em perspectiva. Para mudar para as vistas ortogonais é necessário carregas nas teclas respectivas. \

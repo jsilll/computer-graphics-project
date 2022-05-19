@@ -154,9 +154,6 @@ function createAbstract(x, y, z) {
     head_group.position.y = y;
     head_group.position.z = z;
 
-    head_group.rotateY(Math.PI / 3.5);
-    head_group.rotateX(-Math.PI / 8);
-
     scene.add(head_group);
 }
 
