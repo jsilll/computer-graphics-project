@@ -19,18 +19,18 @@ const position_controller = {
 }
 
 const target_object_controller = {
-    81: { pressed: false, rotate: (obj, delta) => obj.rotateX(delta) },  // q
-    87: { pressed: false, rotate: (obj, delta) => obj.rotateX(-delta) }, // w
+    81: { pressed: false, rotate: (obj, delta) => obj.rotateX(delta * 3) },  // q
+    87: { pressed: false, rotate: (obj, delta) => obj.rotateX(-delta * 3) }, // w
 }
 
 const mesh2_controller = {
-    65: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, mesh1.position, new THREE.Vector3(0, 1, 0), delta, false) },  // a
-    83: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, mesh1.position, new THREE.Vector3(0, 1, 0), -delta, false) }, // s
+    65: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, mesh1.position, new THREE.Vector3(0, 1, 0), delta * 3, false) },  // a
+    83: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, mesh1.position, new THREE.Vector3(0, 1, 0), -delta * 3, false) }, // s
 }
 
 const mesh3_controller = {
-    90: { pressed: false, rotate: (obj, delta) => obj.rotateY(delta) },  // z 
-    88: { pressed: false, rotate: (obj, delta) => obj.rotateY(-delta) }, // x
+    90: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, mesh1.position, new THREE.Vector3(1, 1, 1).normalize(), delta * 3, false) },   // z 
+    88: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, mesh1.position, new THREE.Vector3(1, 1, 1).normalize(), -delta * 3, false) },  // x
 }
 
 //  ---------------- Object creation ------------------- //
@@ -296,7 +296,12 @@ function init() {
     cameras.push(createOrthoCamera(0, 0, 600));
     cameras.push(createOrthoCamera(600, 0, 0));
     cameras.push(createOrthoCamera(0, 600, 0));
-    camera = cameras[0]; // default
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);; // default
+    camera.position.x = 0;
+    camera.position.y = 600;
+    camera.position.z = 600;
+    camera.lookAt(scene.position);
+    scene.add(camera)
 
     // Event Listeners for User Interactions
     window.addEventListener("keydown", onKeyDown);
@@ -396,6 +401,7 @@ function createOrthoCamera(x, y, z) {
     cam.position.y = y;
     cam.position.z = z;
     cam.lookAt(scene.position);
+    scene.add(cam);
     return cam;
 }
 
