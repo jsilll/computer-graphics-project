@@ -5,7 +5,6 @@
 #### - Inês Magessi 95593
 #### - João Silveira 95597
 #### - Tomás Nunes 96915
-##
 
 ## Teclas:
 1 - Vista XY \
@@ -21,7 +20,6 @@ Setas esquerda e direita - Mover segundo eixo XX \
 Setas cima e baixo - Mover segundo eixo YY \
 C/D - Mover segundo eixo zz
 
-##
 ## Observações:
 A vista inicial é uma vista em perspectiva. Para mudar para as vistas ortogonais é necessário carregas nas teclas respectivas. \
 Foram usadas texturas para preencher o material das primitivas. Para a sua correta visualização é necessário correr o programa localmente com o comando "python -m http.server" ou usando extensão LiveServer do editor.

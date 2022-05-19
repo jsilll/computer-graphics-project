@@ -70,7 +70,7 @@ function createTower(x, y, z) {
     // // cone
     color = 0x8bfc74;
     geometry = new THREE.ConeGeometry(45, 70, 12);
-    mesh = createPrimitive(x, y + 115, z, color, geometry, 0, 0, 0, null, null);
+    mesh = createPrimitive(x, y + 120, z, color, geometry, 0, 0, 0, null, null);
     tower.add(mesh);
 
     scene.add(tower);
