@@ -8,6 +8,7 @@ var cameras = [];
 
 // objects
 var planet;
+const radius = 300;
 
 //  ---------------- Controllers ---------------- //
 
@@ -39,13 +40,9 @@ const tail_group_rotation_controller = {
 }
 
 //  ---------------- Object creation ------------------- //
+
 function createPrimitive(x, y, z, obj_color, obj_geometry, rot_x, rot_y, rot_z, obj_side, texture) {
-    if (texture != null) {
-        material = new THREE.MeshBasicMaterial({ wireframe: true, side: obj_side, map: texture });
-    }
-    else {
-        material = new THREE.MeshBasicMaterial({ color: obj_color, wireframe: true, side: obj_side });
-    }
+    material = new THREE.MeshBasicMaterial({ color: obj_color, wireframe: true, side: obj_side, map: texture });
     geometry = obj_geometry;
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
@@ -56,10 +53,87 @@ function createPrimitive(x, y, z, obj_color, obj_geometry, rot_x, rot_y, rot_z, 
 }
 
 function createPlanet(x, y, z) {
-    const geometry = new THREE.SphereGeometry(60, 40, 10);
+
+    const geometry = new THREE.SphereGeometry(radius, 40, 10);
     const texture = new THREE.TextureLoader().load('textures/planet_texture.jpg');
-    planet = createPrimitive(x, y, z, null, geometry, 0, 0, 0, null, texture);
-    scene.add(planet);
+    material = new THREE.MeshBasicMaterial({wireframe: true, map: texture});
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    
+    scene.add(mesh);
+}
+
+function createRocket() {
+    var rocket = new THREE.Object3D();
+
+    // body
+    var geometry = new THREE.CylinderGeometry(5, 5, 20, 30);
+    mesh = createPrimitive(0, 0, 0, 0xf73c3c, geometry, null, null, null, null, null);
+    rocket.add(mesh);
+
+    // propulsors
+    geometry = new THREE.CapsuleGeometry(1, 2, 10, 30);
+    mesh = createPrimitive(5.5, -10, 0, 0x00ff00, geometry, null, null, null, null, null);
+    rocket.add(mesh);
+
+    mesh = createPrimitive(-5.5, -10, 0, 0x00ff00, geometry, null, null, null, null, null);
+    rocket.add(mesh);
+
+    mesh = createPrimitive(0, -10, -5.5, 0x00ff00, geometry, null, null, null, null, null);
+    rocket.add(mesh);
+
+    mesh = createPrimitive(0, -10, 5.5, 0x00ff00, geometry, null, null, null, null, null);
+    rocket.add(mesh);
+
+    //nose
+    var geometry = new THREE.CylinderGeometry(0.1, 1, 9, 30);
+    mesh = createPrimitive(0, 14.5, 0, 0xf73c3c, geometry, null, null, null, null, null);
+    rocket.add(mesh);
+
+    rocket.position.setFromSphericalCoords(radius * 1.2, Math.PI / 2, 0);
+
+    scene.add(rocket);
+}
+
+function createTrash() {
+
+    // Trash - cubes
+    for (i = 0; i < 10; i++) {
+        var cubeTrash = new THREE.Object3D();
+
+        geometry = new THREE.BoxGeometry(8, 8, 8);
+        mesh = createPrimitive(0, 0, 0, 0x00ff00, geometry, null, null, null, null, null);
+
+        cubeTrash.add(mesh);
+        
+        // random coordinates
+        var phi = Math.random() * Math.PI * 2;
+        var theta = Math.random() * Math.PI * 2;
+        
+        cubeTrash.position.setFromSphericalCoords(radius * 1.2, phi, theta);
+
+        scene.add(cubeTrash);
+    }
+
+    // Trash - cylinder
+    for (i = 0; i < 10; i++) {
+        var cylinderTrash = new THREE.Object3D();
+
+        geometry = new THREE.ConeGeometry(3, 8, 32);
+        mesh = createPrimitive(0, 0, 0, 0x00ff00, geometry, null, null, null, null, null);
+
+        cylinderTrash.add(mesh);
+        
+        // random coordinates
+        var phi = Math.random() * Math.PI * 2;
+        var theta = Math.random() * Math.PI * 2;
+        
+        cylinderTrash.position.setFromSphericalCoords(radius * 1.2, phi, theta);
+
+        scene.add(cylinderTrash);
+    }
+    
+
 }
 
 //  ---------------- Three.js Functions ---------------- //
@@ -109,6 +183,8 @@ function setupScene() {
 
     // Creating objects
     createPlanet(0, 0, 0);
+    createRocket();
+    createTrash();
 }
 
 // ---------------- Update Scene ---------------- //
