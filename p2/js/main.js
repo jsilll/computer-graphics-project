@@ -154,13 +154,17 @@ function updateDisplayType() {
 }
 
 function updateAspectRatio() {
-    // TODO: if current camera is perspective or orthogonal
     cameras.forEach((c) => {
-        c.left = window.innerWidth / - 2
-        c.right = window.innerWidth / 2
-        c.top = window.innerHeight / 2
-        c.bottom = window.innerHeight / - 2
-        c.updateProjectionMatrix();
+        if (c.isPerspectiveCamera) {
+            c.aspect = window.innerWidth / window.innerHeight;
+            c.updateProjectionMatrix();
+        } else if (c.isOrthographicCamera) {
+            c.left = window.innerWidth / - 2
+            c.right = window.innerWidth / 2
+            c.top = window.innerHeight / 2
+            c.bottom = window.innerHeight / - 2
+            c.updateProjectionMatrix();
+        }
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
