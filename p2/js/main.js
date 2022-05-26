@@ -229,7 +229,7 @@ function updateDisplayType() {
     });
 }
 
-function updateAspectRatio() {
+function updateCameras() {
     cameras.forEach((c) => {
         if (c.isPerspectiveCamera) {
             c.aspect = window.innerWidth / window.innerHeight;
@@ -273,7 +273,7 @@ function createPerspectiveCamera(x, y, z) {
 
 function onResize() {
     'use strict';
-    updateAspectRatio();
+    updateCameras();
 }
 
 function onKeyDown(e) {
