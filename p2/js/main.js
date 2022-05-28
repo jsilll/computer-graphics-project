@@ -10,6 +10,10 @@ var cameras = [];
 var planet;
 const radius = 300;
 
+var rocket;
+var rocket_pos;
+
+const virtual_camera_offset= new THREE.Vector3().setFromSphericalCoords(radius * 1.2 + 100, - Math.PI / 10, 0);
 //  ---------------- Controllers ---------------- //
 
 const head_group_position_controller = {
@@ -64,7 +68,7 @@ function createPlanet(x, y, z) {
 }
 
 function createRocket() {
-    var rocket = new THREE.Object3D();
+    rocket = new THREE.Object3D();
 
     // body
     var geometry = new THREE.CylinderGeometry(5, 5, 20, 30);
@@ -151,8 +155,8 @@ function init() {
     // Setting Up Cameras
     cameras.push(createOrthoCamera(0, 0, 600));
     cameras.push(createPerspectiveCamera(600, 600, 600));
-    cameras.push(createPerspectiveCamera(0, 600, 0));
-    camera = cameras[0];
+    cameras.push(createPerspectiveCamera(0, - 50, radius * 1.2 + 100));
+    camera = cameras[2];
 
     // Event Listeners for User Interactions
     window.addEventListener("keydown", onKeyDown);
@@ -168,6 +172,7 @@ function render() {
 function animate() {
     'use strict';
     updatePositions();
+    updateVirtualCamera();
     requestAnimationFrame(animate);
     render();
 }
@@ -187,6 +192,21 @@ function setupScene() {
     createTrash();
 }
 
+// ------------ Update Virtual Camera ------------ //
+
+function updateVirtualCamera() {
+
+    // rocket position in spherical coords
+    rocket_pos = new THREE.Spherical().setFromVector3(rocket.position);
+
+    // virtual camera position
+    cameras[2].position.setFromSphericalCoords(rocket_pos.radius + 100, rocket_pos.phi, rocket_pos.theta);
+    
+    // virtual camera looking at rocket
+    cameras[2].lookAt(rocket.position);
+
+}
+
 // ---------------- Update Scene ---------------- //
 
 function updatePositions() {
@@ -199,7 +219,7 @@ function updatePositions() {
             obj1_velocity.add(head_group_position_controller[key].vec);
         }
     });
-    // head_group.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
+    rocket.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
 
     // Update Rotation
     Object.keys(head_group_rotation_controller).forEach((key) => {
@@ -264,7 +284,7 @@ function createPerspectiveCamera(x, y, z) {
     cam.position.x = x;
     cam.position.y = y;
     cam.position.z = z;
-    cam.lookAt(scene.position);
+    cam.lookAt(rocket.position);
     scene.add(cam)
     return cam;
 }
