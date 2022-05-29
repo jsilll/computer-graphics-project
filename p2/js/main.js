@@ -91,6 +91,7 @@ function createRocket() {
     rocket.add(mesh);
 
     rocket.position.setFromSphericalCoords(radius * 1.2, Math.PI / 2, 0);
+    rocket.lookAt(scene.position);
 
     scene.add(rocket);
 }
@@ -150,9 +151,9 @@ function init() {
 
     // Setting Up Cameras
     cameras.push(createOrthoCamera(0, 0, 600));
-    cameras.push(createPerspectiveCamera(600, 600, 600));
-    cameras.push(createPerspectiveCamera(0, - 50, radius * 1.2 + 100));
-    camera = cameras[2];
+    cameras.push(createPerspectiveCamera(550, 550, 550, scene.position));
+    cameras.push(createPerspectiveCamera(0, - 50, radius * 1.2 + 100, rocket.position));
+    camera = cameras[1];
 
     // Event Listeners for User Interactions
     window.addEventListener("keydown", onKeyDown);
@@ -215,15 +216,19 @@ function updatePositions() {
         if (head_group_position_controller[key].pressed) {
             if (head_group_position_controller[key].down) {
                 rocket.position.setFromSphericalCoords(rocket_pos.radius, rocket_pos.phi + jump, rocket_pos.theta);
+                rocket.lookAt(scene.position);                
             }
             if (head_group_position_controller[key].up) {
                 rocket.position.setFromSphericalCoords(rocket_pos.radius, rocket_pos.phi - jump, rocket_pos.theta);
+                rocket.lookAt(scene.position);     
             }
             if (head_group_position_controller[key].right) {
                 rocket.position.setFromSphericalCoords(rocket_pos.radius, rocket_pos.phi, rocket_pos.theta + jump);
+                rocket.lookAt(scene.position);
             }
             if (head_group_position_controller[key].left) {
                 rocket.position.setFromSphericalCoords(rocket_pos.radius, rocket_pos.phi, rocket_pos.theta - jump);
+                rocket.lookAt(scene.position);
             }
         }
     });
@@ -285,13 +290,13 @@ function createOrthoCamera(x, y, z) {
     return cam;
 }
 
-function createPerspectiveCamera(x, y, z) {
+function createPerspectiveCamera(x, y, z, lookAt) {
     'use strict';
-    var cam = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+    var cam = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
     cam.position.x = x;
     cam.position.y = y;
     cam.position.z = z;
-    cam.lookAt(rocket.position);
+    cam.lookAt(lookAt);
     scene.add(cam)
     return cam;
 }
