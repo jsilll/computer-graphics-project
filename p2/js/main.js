@@ -5,7 +5,10 @@ var geometry, mesh;
 
 // 0 - front, 1 - top, 2 - right
 var cameras = [];
-
+var phiDeg = 90;
+var thetaDeg = 0;
+var thetaR;
+var phiR;
 // objects
 var planet;
 const radius = 300;
@@ -17,12 +20,12 @@ const virtual_camera_offset= new THREE.Vector3().setFromSphericalCoords(radius *
 //  ---------------- Controllers ---------------- //
 
 const head_group_position_controller = {
-    39: { pressed: false, vec: new THREE.Vector3(1, 0, 0) },  // right
-    37: { pressed: false, vec: new THREE.Vector3(-1, 0, 0) }, // left
-    38: { pressed: false, vec: new THREE.Vector3(0, 1, 0) },  // up
-    40: { pressed: false, vec: new THREE.Vector3(0, -1, 0) }, // down
-    67: { pressed: false, vec: new THREE.Vector3(0, 0, 1) },  // 'c'
-    68: { pressed: false, vec: new THREE.Vector3(0, 0, -1) }, // 'd'
+    39: { pressed: false, right: true, left: false, up: false, down: false},  // right
+    37: { pressed: false, right: false, left: true, up: false, down: false}, // left
+    38: { pressed: false, right: false, left: false, up: true, down: false},  // up
+    40: { pressed: false, right: false, left: false, up: false, down: true}, // down
+    // 40: { pressed: false, vec: new THREE.VE(0, 1, 0) },  // 'c'
+    // 68: { pressed: false, vec: new THREE.Vector3(0, 0, -1) }, // 'd'
 }
 
 // Controls the whole object
@@ -210,16 +213,38 @@ function updateVirtualCamera() {
 // ---------------- Update Scene ---------------- //
 
 function updatePositions() {
-    const delta = clock.getDelta();
+    let delta = clock.getDelta();
+    phiR = THREE.Math.degToRad(phiDeg);
+    thetaR = THREE.Math.degToRad(thetaDeg);
 
     // Update Position
-    const obj1_velocity = new THREE.Vector3(0, 0, 0);
+    // const obj1_velocity = new THREE.Spherical(radius * 1.2, phiR, thetaR);
     Object.keys(head_group_position_controller).forEach((key) => {
         if (head_group_position_controller[key].pressed) {
-            obj1_velocity.add(head_group_position_controller[key].vec);
+            // obj1_velocity.add(head_group_position_controller[key].vec);
+            if (head_group_position_controller[key].down && phiDeg < 180) {
+                phiDeg++;
+                phiR = THREE.Math.degToRad(phiDeg);
+                rocket.position.setFromSphericalCoords(radius * 1.2, phiR, thetaR);
+            }
+            if (head_group_position_controller[key].up && phiDeg > 0) {
+                phiDeg--;
+                phiR = THREE.Math.degToRad(phiDeg);
+                rocket.position.setFromSphericalCoords(radius * 1.2, phiR, thetaR);
+            }
+            if (head_group_position_controller[key].right) {
+                thetaDeg++;
+                thetaR = THREE.Math.degToRad(thetaDeg);
+                rocket.position.setFromSphericalCoords(radius * 1.2, phiR, thetaR);
+            }
+            if (head_group_position_controller[key].left) {
+                thetaDeg--;
+                thetaR = THREE.Math.degToRad(thetaDeg);
+                rocket.position.setFromSphericalCoords(radius * 1.2, phiR, thetaR);
+            }
         }
     });
-    rocket.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
+    //rocket.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
 
     // Update Rotation
     Object.keys(head_group_rotation_controller).forEach((key) => {
