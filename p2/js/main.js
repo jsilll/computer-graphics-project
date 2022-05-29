@@ -90,7 +90,11 @@ function createRocket() {
     mesh = createPrimitive(0, 14.5, 0, 0xf73c3c, geometry, null, null, null, null, null);
     rocket.add(mesh);
 
-    rocket.position.setFromSphericalCoords(radius * 1.2, Math.PI / 2, 0);
+    // random coordinates
+    var phi = Math.random() * Math.PI * 2;
+    var theta = Math.random() * Math.PI * 2;
+    
+    rocket.position.setFromSphericalCoords(radius * 1.2, phi, theta);
     rocket.lookAt(scene.position);
 
     scene.add(rocket);
@@ -232,6 +236,8 @@ function updatePositions() {
             }
         }
     });
+
+    //  console.log(new THREE.Spherical().setFromVector3(rocket.position));
 
     // Update Rotation
     Object.keys(head_group_rotation_controller).forEach((key) => {
