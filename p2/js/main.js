@@ -5,10 +5,6 @@ var geometry, mesh;
 
 // 0 - front, 1 - top, 2 - right
 var cameras = [];
-var phiDeg = 90;
-var thetaDeg = 0;
-var thetaR;
-var phiR;
 // objects
 var planet;
 const radius = 300;
@@ -210,38 +206,27 @@ function updateVirtualCamera() {
 // ---------------- Update Scene ---------------- //
 
 function updatePositions() {
-    let delta = clock.getDelta();
-    phiR = THREE.Math.degToRad(phiDeg);
-    thetaR = THREE.Math.degToRad(thetaDeg);
+    const delta = clock.getDelta();
+    const jump = THREE.Math.degToRad(1);
+    rocket_pos = new THREE.Spherical().setFromVector3(rocket.position);
 
     // Update Position
-    // const obj1_velocity = new THREE.Spherical(radius * 1.2, phiR, thetaR);
     Object.keys(head_group_position_controller).forEach((key) => {
         if (head_group_position_controller[key].pressed) {
-            // obj1_velocity.add(head_group_position_controller[key].vec);
-            if (head_group_position_controller[key].down && phiDeg < 180) {
-                phiDeg++;
-                phiR = THREE.Math.degToRad(phiDeg);
-                rocket.position.setFromSphericalCoords(radius * 1.2, phiR, thetaR);
+            if (head_group_position_controller[key].down) {
+                rocket.position.setFromSphericalCoords(rocket_pos.radius, rocket_pos.phi + jump, rocket_pos.theta);
             }
-            if (head_group_position_controller[key].up && phiDeg > 0) {
-                phiDeg--;
-                phiR = THREE.Math.degToRad(phiDeg);
-                rocket.position.setFromSphericalCoords(radius * 1.2, phiR, thetaR);
+            if (head_group_position_controller[key].up) {
+                rocket.position.setFromSphericalCoords(rocket_pos.radius, rocket_pos.phi - jump, rocket_pos.theta);
             }
             if (head_group_position_controller[key].right) {
-                thetaDeg++;
-                thetaR = THREE.Math.degToRad(thetaDeg);
-                rocket.position.setFromSphericalCoords(radius * 1.2, phiR, thetaR);
+                rocket.position.setFromSphericalCoords(rocket_pos.radius, rocket_pos.phi, rocket_pos.theta + jump);
             }
             if (head_group_position_controller[key].left) {
-                thetaDeg--;
-                thetaR = THREE.Math.degToRad(thetaDeg);
-                rocket.position.setFromSphericalCoords(radius * 1.2, phiR, thetaR);
+                rocket.position.setFromSphericalCoords(rocket_pos.radius, rocket_pos.phi, rocket_pos.theta - jump);
             }
         }
     });
-    //rocket.position.add(obj1_velocity.normalize().multiplyScalar(delta * 80));
 
     // Update Rotation
     Object.keys(head_group_rotation_controller).forEach((key) => {
