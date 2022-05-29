@@ -16,7 +16,6 @@ const radius = 300;
 var rocket;
 var rocket_pos;
 
-const virtual_camera_offset= new THREE.Vector3().setFromSphericalCoords(radius * 1.2 + 100, - Math.PI / 10, 0);
 //  ---------------- Controllers ---------------- //
 
 const head_group_position_controller = {
@@ -24,8 +23,6 @@ const head_group_position_controller = {
     37: { pressed: false, right: false, left: true, up: false, down: false}, // left
     38: { pressed: false, right: false, left: false, up: true, down: false},  // up
     40: { pressed: false, right: false, left: false, up: false, down: true}, // down
-    // 40: { pressed: false, vec: new THREE.VE(0, 1, 0) },  // 'c'
-    // 68: { pressed: false, vec: new THREE.Vector3(0, 0, -1) }, // 'd'
 }
 
 // Controls the whole object
