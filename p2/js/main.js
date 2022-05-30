@@ -5,44 +5,49 @@ var geometry, mesh;
 
 // 0 - front, 1 - top, 2 - right
 var cameras = [];
-// objects
-var planet;
+
+//  ---------------- Object Variables ---------------- //
 const radius = 300;
 
+var planet;
 var rocket;
-var rocket_pos;
+
+const cubeTrashes = {
+    0: [],
+    1: [],
+    2: [],
+    3: [],
+    4: [],
+    5: [],
+    6: [],
+    7: [],
+}
+
+const coneTrashes = {
+    0: [],
+    1: [],
+    2: [],
+    3: [],
+    4: [],
+    5: [],
+    6: [],
+    7: [],
+}
 
 //  ---------------- Controllers ---------------- //
+const jump = THREE.Math.degToRad(60);
 
-const head_group_position_controller = {
-    39: { pressed: false, right: true, left: false, up: false, down: false},  // right
-    37: { pressed: false, right: false, left: true, up: false, down: false}, // left
-    38: { pressed: false, right: false, left: false, up: true, down: false},  // up
-    40: { pressed: false, right: false, left: false, up: false, down: true}, // down
-}
-
-// Controls the whole object
-const head_group_rotation_controller = {
-    81: { pressed: false, rotate: (obj, delta) => obj.rotateX(delta * 3) },  // q
-    87: { pressed: false, rotate: (obj, delta) => obj.rotateX(-delta * 3) }, // w
-}
-
-// Controls the tail and the small sphere primitives
-const body_group_rotation_controller = {
-    65: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, big_sphere.position, new THREE.Vector3(0, 1, 0), delta * 3, false) },  // a
-    83: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, big_sphere.position, new THREE.Vector3(0, 1, 0), -delta * 3, false) }, // s
-}
-
-// Controls the small sphere primitives
-const tail_group_rotation_controller = {
-    90: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, big_sphere.position, new THREE.Vector3(1, 1, 1).normalize(), delta * 3, false) },   // z 
-    88: { pressed: false, rotate: (obj, delta) => rotateAroundPoint(obj, big_sphere.position, new THREE.Vector3(1, 1, 1).normalize(), -delta * 3, false) },  // x
+const rocket_controller = {
+    39: { pressed: false, vel: [0, 0, jump] },   // right
+    37: { pressed: false, vel: [0, 0, - jump] }, // left
+    38: { pressed: false, vel: [0, - jump, 0] },   // up
+    40: { pressed: false, vel: [0, jump, 0] }, // down
 }
 
 //  ---------------- Object creation ------------------- //
 
 function createPrimitive(x, y, z, obj_color, obj_geometry, rot_x, rot_y, rot_z, obj_side, texture) {
-    material = new THREE.MeshBasicMaterial({ color: obj_color, wireframe: true, side: obj_side, map: texture });
+    material = new THREE.MeshPhongMaterial({ color: obj_color, wireframe: false, side: obj_side, map: texture });
     geometry = obj_geometry;
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
@@ -53,13 +58,15 @@ function createPrimitive(x, y, z, obj_color, obj_geometry, rot_x, rot_y, rot_z, 
 }
 
 function createPlanet(x, y, z) {
+    const geometry = new THREE.SphereGeometry(radius, 40, 256);
 
-    const geometry = new THREE.SphereGeometry(radius, 40, 10);
-    const texture = new THREE.TextureLoader().load('textures/planet_texture.jpg');
-    material = new THREE.MeshBasicMaterial({wireframe: true, map: texture});
-    mesh = new THREE.Mesh(geometry, material);
+    const material = new THREE.MeshPhongMaterial();
+    material.map = new THREE.TextureLoader().load('textures/mars_texture.jpg');
+    material.bumpMap = new THREE.TextureLoader().load('textures/mars_bump.png')
+    material.bumpScale = 10
+
+    const mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
-    
     scene.add(mesh);
 }
 
@@ -68,32 +75,32 @@ function createRocket() {
 
     // body
     var geometry = new THREE.CylinderGeometry(5, 5, 20, 30);
-    mesh = createPrimitive(0, 0, 0, 0xf73c3c, geometry, null, null, null, null, null);
+    mesh = createPrimitive(0, 0, 0, 0xeeeeee, geometry, null, null, null, null, null);
     rocket.add(mesh);
 
     // propulsors
     geometry = new THREE.CapsuleGeometry(1, 2, 10, 30);
-    mesh = createPrimitive(5.5, -10, 0, 0x00ff00, geometry, null, null, null, null, null);
+    mesh = createPrimitive(5.5, -10, 0, 0xf73c3c, geometry, null, null, null, null, null);
     rocket.add(mesh);
 
-    mesh = createPrimitive(-5.5, -10, 0, 0x00ff00, geometry, null, null, null, null, null);
+    mesh = createPrimitive(-5.5, -10, 0, 0xf73c3c, geometry, null, null, null, null, null);
     rocket.add(mesh);
 
-    mesh = createPrimitive(0, -10, -5.5, 0x00ff00, geometry, null, null, null, null, null);
+    mesh = createPrimitive(0, -10, -5.5, 0xf73c3c, geometry, null, null, null, null, null);
     rocket.add(mesh);
 
-    mesh = createPrimitive(0, -10, 5.5, 0x00ff00, geometry, null, null, null, null, null);
+    mesh = createPrimitive(0, -10, 5.5, 0xf73c3c, geometry, null, null, null, null, null);
     rocket.add(mesh);
 
-    //nose
-    var geometry = new THREE.CylinderGeometry(0.1, 1, 9, 30);
+    // nose
+    var geometry = new THREE.CylinderGeometry(0.1, 5, 9, 30);
     mesh = createPrimitive(0, 14.5, 0, 0xf73c3c, geometry, null, null, null, null, null);
     rocket.add(mesh);
 
     // random coordinates
     var phi = Math.random() * Math.PI * 2;
     var theta = Math.random() * Math.PI * 2;
-    
+
     rocket.position.setFromSphericalCoords(radius * 1.2, phi, theta);
     rocket.lookAt(scene.position);
 
@@ -101,45 +108,62 @@ function createRocket() {
 }
 
 function createTrash() {
-
     // Trash - cubes
     for (i = 0; i < 10; i++) {
         var cubeTrash = new THREE.Object3D();
 
         geometry = new THREE.BoxGeometry(8, 8, 8);
-        mesh = createPrimitive(0, 0, 0, 0x00ff00, geometry, null, null, null, null, null);
+        mesh = createPrimitive(0, 0, 0, 0x0cbc1b9, geometry, null, null, null, null, null);
 
         cubeTrash.add(mesh);
-        
+
         // random coordinates
         var phi = Math.random() * Math.PI * 2;
         var theta = Math.random() * Math.PI * 2;
-        
+
         cubeTrash.position.setFromSphericalCoords(radius * 1.2, phi, theta);
 
+        cubeTrash.rotateX(Math.random() * Math.PI * 2);
+        cubeTrash.rotateY(Math.random() * Math.PI * 2);
+        cubeTrash.rotateZ(Math.random() * Math.PI * 2);
+
+        cubeTrashes[getPositionQuadrant(...cubeTrash.position)].push(cubeTrash);
         scene.add(cubeTrash);
     }
 
     // Trash - cylinder
     for (i = 0; i < 10; i++) {
-        var cylinderTrash = new THREE.Object3D();
+        var coneTrash = new THREE.Object3D();
 
-        geometry = new THREE.ConeGeometry(3, 8, 32);
-        mesh = createPrimitive(0, 0, 0, 0x00ff00, geometry, null, null, null, null, null);
+        geometry = new THREE.ConeGeometry(4, 15, 32);
+        mesh = createPrimitive(0, 0, 0, 0x0a48984, geometry, null, null, null, null, null);
 
-        cylinderTrash.add(mesh);
-        
+        coneTrash.add(mesh);
+
         // random coordinates
         var phi = Math.random() * Math.PI * 2;
         var theta = Math.random() * Math.PI * 2;
-        
-        cylinderTrash.position.setFromSphericalCoords(radius * 1.2, phi, theta);
 
-        scene.add(cylinderTrash);
+        coneTrash.position.setFromSphericalCoords(radius * 1.2, phi, theta);
+
+        coneTrash.rotateX(Math.random() * Math.PI * 2);
+        coneTrash.rotateY(Math.random() * Math.PI * 2);
+        coneTrash.rotateZ(Math.random() * Math.PI * 2);
+
+        coneTrashes[getPositionQuadrant(...coneTrash.position)].push(coneTrash);
+        scene.add(coneTrash);
     }
-    
 
 }
+
+//  ---------------- Lights Creation ---------------- //
+function createLights() {
+    const light1 = new THREE.DirectionalLight(0x404040, 7); // soft white light
+    const light2 = new THREE.AmbientLight(0x404040, 1); // soft white light
+    scene.add(light1);
+    scene.add(light2);
+}
+
 
 //  ---------------- Three.js Functions ---------------- //
 
@@ -174,6 +198,7 @@ function animate() {
     'use strict';
     updatePositions();
     updateVirtualCamera();
+    checkCollisions();
     requestAnimationFrame(animate);
     render();
 }
@@ -185,78 +210,56 @@ function setupScene() {
     scene = new THREE.Scene();
 
     // Adding Axis to the Scene
-    scene.add(new THREE.AxisHelper(50));
+    scene.add(new THREE.AxesHelper(50));
+
+    // Add scene background
+    scene.background = new THREE.TextureLoader().load('textures/stars_texture.jpg');
 
     // Creating objects
     createPlanet(0, 0, 0);
     createRocket();
     createTrash();
+
+    // Creating Lights
+    createLights();
 }
 
 // ------------ Update Virtual Camera ------------ //
 
 function updateVirtualCamera() {
-
     // rocket position in spherical coords
     rocket_pos = new THREE.Spherical().setFromVector3(rocket.position);
 
     // virtual camera position
-    cameras[2].position.setFromSphericalCoords(rocket_pos.radius + 100, rocket_pos.phi, rocket_pos.theta);
-    
+    cameras[2].position.setFromSphericalCoords(rocket_pos.radius + 200, rocket_pos.phi, rocket_pos.theta);
+
     // virtual camera looking at rocket
     cameras[2].lookAt(rocket.position);
-
 }
 
 // ---------------- Update Scene ---------------- //
 
 function updatePositions() {
+    function add_vector(a, b) {
+        return a.map((e, i) => e + b[i]);
+    }
+
     const delta = clock.getDelta();
-    const jump = THREE.Math.degToRad(1);
-    rocket_pos = new THREE.Spherical().setFromVector3(rocket.position);
-
-    // Update Position
-    Object.keys(head_group_position_controller).forEach((key) => {
-        if (head_group_position_controller[key].pressed) {
-            if (head_group_position_controller[key].down) {
-                rocket.position.setFromSphericalCoords(rocket_pos.radius, rocket_pos.phi + jump, rocket_pos.theta);
-                rocket.lookAt(scene.position);                
-            }
-            if (head_group_position_controller[key].up) {
-                rocket.position.setFromSphericalCoords(rocket_pos.radius, rocket_pos.phi - jump, rocket_pos.theta);
-                rocket.lookAt(scene.position);     
-            }
-            if (head_group_position_controller[key].right) {
-                rocket.position.setFromSphericalCoords(rocket_pos.radius, rocket_pos.phi, rocket_pos.theta + jump);
-                rocket.lookAt(scene.position);
-            }
-            if (head_group_position_controller[key].left) {
-                rocket.position.setFromSphericalCoords(rocket_pos.radius, rocket_pos.phi, rocket_pos.theta - jump);
-                rocket.lookAt(scene.position);
-            }
+    var final_velocity = [0, 0, 0];
+    Object.keys(rocket_controller).forEach((key) => {
+        if (rocket_controller[key].pressed) {
+            final_velocity = add_vector(final_velocity, rocket_controller[key].vel);
         }
     });
 
-    //  console.log(new THREE.Spherical().setFromVector3(rocket.position));
+    const rocket_old_pos_spherical = new THREE.Spherical().setFromVector3(rocket.position);
+    rocket.position.setFromSphericalCoords(
+        rocket_old_pos_spherical.radius + final_velocity[0] * delta,
+        rocket_old_pos_spherical.phi + final_velocity[1] * delta,
+        rocket_old_pos_spherical.theta + final_velocity[2] * delta
+    )
 
-    // Update Rotation
-    Object.keys(head_group_rotation_controller).forEach((key) => {
-        if (head_group_rotation_controller[key].pressed) {
-            // head_group_rotation_controller[key].rotate(head_group, delta);
-        }
-    });
-
-    Object.keys(body_group_rotation_controller).forEach((key) => {
-        if (body_group_rotation_controller[key].pressed) {
-            // body_group_rotation_controller[key].rotate(body_group, delta);
-        }
-    });
-
-    Object.keys(tail_group_rotation_controller).forEach((key) => {
-        if (tail_group_rotation_controller[key].pressed) {
-            // tail_group_rotation_controller[key].rotate(tail_group, delta);
-        }
-    });
+    rocket.lookAt(scene.position);
 }
 
 function updateDisplayType() {
@@ -281,6 +284,24 @@ function updateCameras() {
         }
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function checkCollisions() {
+    const quadrant = getPositionQuadrant(...rocket.position);
+
+    cubeTrashes[quadrant].forEach((cube, idx) => {
+        const cube_sphere_radius = 8 * Math.sqrt(3) / 2;
+        if (cube.position.clone().sub(rocket.position).length() <= (15 + cube_sphere_radius)) {
+            cube.clear();
+        }
+    });
+
+    coneTrashes[quadrant].forEach((cone, idx) => {
+        const cone_sphere_radius = 10;
+        if (cone.position.clone().sub(rocket.position).length() <= (15 + cone_sphere_radius)) {
+            cone.clear();
+        }
+    });
 }
 
 // ---------------- Cameras ---------------- //
@@ -310,34 +331,13 @@ function createPerspectiveCamera(x, y, z, lookAt) {
 // ---------------- Event Handlers ---------------- //
 
 function onResize() {
-    'use strict';
     updateCameras();
 }
 
 function onKeyDown(e) {
-    'use strict';
-
     // Move Whole Object
-    if (head_group_position_controller[e.keyCode]) {
-        head_group_position_controller[e.keyCode].pressed = true;
-        return;
-    }
-
-    // Rotate Whole Object
-    if (head_group_rotation_controller[e.keyCode]) {
-        head_group_rotation_controller[e.keyCode].pressed = true;
-        return;
-    }
-
-    // Rotate Body Group 
-    if (body_group_rotation_controller[e.keyCode]) {
-        body_group_rotation_controller[e.keyCode].pressed = true;
-        return;
-    }
-
-    // Rotate Tail Group 
-    if (tail_group_rotation_controller[e.keyCode]) {
-        tail_group_rotation_controller[e.keyCode].pressed = true;
+    if (rocket_controller[e.keyCode]) {
+        rocket_controller[e.keyCode].pressed = true;
         return;
     }
 
@@ -362,35 +362,16 @@ function onKeyDown(e) {
 
 function onKeyUp(e) {
     'use strict';
-    if (head_group_position_controller[e.keyCode]) {
-        head_group_position_controller[e.keyCode].pressed = false;
-    }
-
-    if (head_group_rotation_controller[e.keyCode]) {
-        head_group_rotation_controller[e.keyCode].pressed = false;
-    }
-
-    if (body_group_rotation_controller[e.keyCode]) {
-        body_group_rotation_controller[e.keyCode].pressed = false;
-    }
-
-    if (tail_group_rotation_controller[e.keyCode]) {
-        tail_group_rotation_controller[e.keyCode].pressed = false;
+    if (rocket_controller[e.keyCode]) {
+        rocket_controller[e.keyCode].pressed = false;
     }
 }
 
 // ---------------- Helper Functions ---------------- //
 
-function rotateAroundPoint(obj, point, axis, theta, pointIsWorld) {
-    pointIsWorld = (pointIsWorld === undefined) ? false : pointIsWorld;
-    if (pointIsWorld) {
-        obj.parent.localToWorld(obj.position);
-    }
-    obj.position.sub(point);
-    obj.position.applyAxisAngle(axis, theta);
-    obj.position.add(point);
-    if (pointIsWorld) {
-        obj.parent.worldToLocal(obj.position);
-    }
-    obj.rotateOnAxis(axis, theta);
+function getPositionQuadrant(x, y, z) {
+    x_positive = x >= 0 ? 0 : 1;
+    y_positive = y >= 0 ? 0 : 1;
+    z_positive = z >= 0 ? 0 : 1;
+    return x_positive + y_positive * 2 + z_positive * 4;
 }
