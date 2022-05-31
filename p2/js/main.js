@@ -38,7 +38,8 @@ const coneTrashes = {
 //  ---------------- Controllers ---------------- //
 const jump = THREE.Math.degToRad(60);
 
-const rocket_controller = {
+
+var rocket_controller = {
     39: { pressed: false, offset: [0, 0, jump] , rotation : Math.PI / 2},   // right
     37: { pressed: false, offset: [0, 0, - jump] , rotation : - Math.PI / 2}, // left
     38: { pressed: false, offset: [0, - jump, 0] , rotation : 0},   // up
@@ -263,10 +264,50 @@ function updatePositions() {
     if (move) {
         // add offset to old position
         const rocket_old_pos_spherical = new THREE.Spherical().setFromVector3(rocket.position);
+        var new_phi = rocket_old_pos_spherical.phi + final_offset[1] * delta;
+        var new_theta = rocket_old_pos_spherical.theta + final_offset[2] * delta;
+        var flag = false;
+        
+        if (new_phi <= 0) {
+            flag = true;
+            new_phi = Math.PI / 100;
+            console.log("1", rocket_controller)
+        }
+        if (new_phi >= Math.PI) {
+            flag = true;
+            new_phi = Math.PI - Math.PI / 100;
+            console.log("2", rocket_controller)
+        }
+        if (flag) {
+            new_theta = new_theta + Math.PI;
+            const new_jump_38 = - rocket_controller[38].offset[1];
+            const new_rotation_38 = (rocket_controller[38].rotation == 0) ? Math.PI : 0;
+            rocket_controller[38].offset[1] = new_jump_38;
+            rocket_controller[38].rotation = new_rotation_38;
+            const new_jump_40 = - rocket_controller[40].offset[1];
+            const new_rotation_40 = (rocket_controller[40].rotation == 0) ? Math.PI : 0;
+            rocket_controller[40].offset[1] = new_jump_40;
+            rocket_controller[40].rotation = new_rotation_40;
+
+            // TODO
+            const new_jump_39 = - rocket_controller[39].offset[2];
+            const new_rotation_39 = - rocket_controller[39].rotation;
+            rocket_controller[39].offset[2] = new_jump_39;
+            rocket_controller[39].rotation = new_rotation_39;
+
+            const new_jump_37 = - rocket_controller[37].offset[2];
+            const new_rotation_37 = - rocket_controller[37].rotation;
+            rocket_controller[37].offset[2] = new_jump_37;
+            rocket_controller[37].rotation = new_rotation_37;
+
+        }
+
+
+        
         rocket.position.setFromSphericalCoords(
             rocket_old_pos_spherical.radius + final_offset[0] * delta,
-            rocket_old_pos_spherical.phi + final_offset[1] * delta,
-            rocket_old_pos_spherical.theta + final_offset[2] * delta
+            new_phi,
+            new_theta
         )
     
         // rocket angle
@@ -277,6 +318,7 @@ function updatePositions() {
                 rocket_angle = rocket_angle + Math.PI;
             }
         }
+
         rocket.lookAt(scene.position);
         rocket.rotateZ(rocket_angle);
     }
