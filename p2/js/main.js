@@ -10,8 +10,9 @@ var cameras = new Array();
 //  ---------------- Object Variables ---------------- //
 const radius = 300;
 
-var planet;
 var rocket;
+var rocket_group;
+var planet;
 
 // quadrants
 const cubeTrashes = {
@@ -87,15 +88,6 @@ function createRocket() {
     var geometry = new THREE.CylinderGeometry(0.1, 5, 9, 30);
     mesh = createPrimitive(0, 14.5, 0, 0xf73c3c, geometry, null, null, null, null, null);
     rocket.add(mesh);
-
-    // random coordinates
-    var phi = Math.random() * Math.PI * 2;
-    var theta = Math.random() * Math.PI * 2;
-
-    setFromSphericalCoords(rocket, radius * 1.2, 3 * Math.PI / 2, 0);
-    rocket.lookAt(scene.position);
-
-    scene.add(rocket);
 }
 
 function createTrash() {
@@ -172,8 +164,20 @@ function init() {
     // Setting Up Cameras
     cameras.push(createOrthoCamera(0, 0, 600));
     cameras.push(createPerspectiveCamera(550, 550, 550, scene.position));
-    cameras.push(createPerspectiveCamera(0, - 50, radius * 1.2 + 100, rocket.position));
+    cameras.push(createPerspectiveCamera(0, -50, -100, rocket.position));
     camera = cameras[1];
+
+    rocket_group = new THREE.Group();
+    rocket_group.add(cameras[2]);
+    rocket_group.add(rocket);
+
+    // random coordinates
+    var phi = Math.random() * Math.PI * 2;
+    var theta = Math.random() * Math.PI * 2;
+    setFromSphericalCoords(rocket_group, radius * 1.2, 3 * Math.PI / 2, 0);
+    rocket_group.lookAt(scene.position);
+    rocket_group.userData = { radius: radius * 1.2, phi: phi, theta: theta };
+    scene.add(rocket_group);
 
     // Event Listeners for User Interactions
     window.addEventListener("keydown", onKeyDown);
@@ -188,10 +192,9 @@ function render() {
 
 function animate() {
     'use strict';
-    updatePositions();
-    updateVirtualCamera();
-    checkCollisions();
     requestAnimationFrame(animate);
+    updatePositions();
+    checkCollisions();
     render();
 }
 
@@ -216,19 +219,6 @@ function setupScene() {
     createLights();
 }
 
-// ------------ Update Virtual Camera ------------ //
-
-function updateVirtualCamera() {
-    // rocket position in spherical coords
-    rocket_pos = new THREE.Spherical().setFromVector3(rocket.position);
-
-    // virtual camera position
-    setFromSphericalCoords(cameras[2], rocket_pos.radius + 150, rocket_pos.phi + Math.PI / 20, rocket_pos.theta);
-
-    // virtual camera looking at rocket
-    cameras[2].lookAt(rocket.position);
-}
-
 // ---------------- Update Scene ---------------- //
 
 function updatePositions() {
@@ -251,54 +241,40 @@ function updatePositions() {
 
     if (move) {
         // add offset to old position
-        const rocket_old_pos_spherical = new THREE.Spherical().setFromVector3(rocket.position);
-
         final_offset = final_offset.normalize()
 
-        var new_radius = rocket_old_pos_spherical.radius + final_offset.x * delta;
-        var new_phi = rocket_old_pos_spherical.phi + final_offset.y * delta;
-        var new_theta = rocket_old_pos_spherical.theta + final_offset.z * delta;
+        rocket_group.userData.radius += final_offset.x * delta;
+        rocket_group.userData.phi += final_offset.y * delta;
+        rocket_group.userData.theta += final_offset.z * delta;
 
         var flag = false;
-        if (new_phi <= 0) {
+        if (rocket_group.userData.phi <= 0) {
             flag = true;
-            new_phi = Math.PI / 10;
-            console.log("1", rocket_controller)
+            rocket_group.userData.phi = 0.01;
         }
-        if (new_phi >= Math.PI) {
+        if (rocket_group.userData.phi >= Math.PI) {
             flag = true;
-            new_phi = Math.PI - Math.PI / 10;
-            console.log("2", rocket_controller)
+            rocket_group.userData.phi = Math.PI - 0.01;
         }
         if (flag) {
-            new_theta = new_theta + Math.PI;
-            const new_jump_38 = - rocket_controller[38].offset[1];
-            const new_rotation_38 = (rocket_controller[38].rotation == 0) ? Math.PI : 0;
-            rocket_controller[38].offset[1] = new_jump_38;
-            rocket_controller[38].rotation = new_rotation_38;
-            const new_jump_40 = - rocket_controller[40].offset[1];
-            const new_rotation_40 = (rocket_controller[40].rotation == 0) ? Math.PI : 0;
-            rocket_controller[40].offset[1] = new_jump_40;
-            rocket_controller[40].rotation = new_rotation_40;
+            rocket_group.userData.theta = rocket_group.userData.theta + Math.PI;
 
-            // TODO
-            const new_jump_39 = - rocket_controller[39].offset[2];
-            const new_rotation_39 = - rocket_controller[39].rotation;
-            rocket_controller[39].offset[2] = new_jump_39;
-            rocket_controller[39].rotation = new_rotation_39;
+            // Swap Up and Down
+            rocket_controller[38].offset.y = - rocket_controller[38].offset.y;;
+            rocket_controller[38].rotation = (rocket_controller[38].rotation == 0) ? Math.PI : 0;;
 
-            const new_jump_37 = - rocket_controller[37].offset[2];
-            const new_rotation_37 = - rocket_controller[37].rotation;
-            rocket_controller[37].offset[2] = new_jump_37;
-            rocket_controller[37].rotation = new_rotation_37;
+            rocket_controller[40].offset.y = - rocket_controller[40].offset.y;
+            rocket_controller[40].rotation = (rocket_controller[40].rotation == 0) ? Math.PI : 0;
 
+            // Swap Left and Right
+            rocket_controller[39].offset.z = - rocket_controller[39].offset.z;
+            rocket_controller[39].rotation = - rocket_controller[39].rotation;;
+
+            rocket_controller[37].offset.z = - rocket_controller[37].offset.z;;
+            rocket_controller[37].rotation = - rocket_controller[37].rotation;;
         }
 
-        setFromSphericalCoords(rocket,
-            new_radius,
-            new_phi,
-            new_theta
-        )
+        setFromSphericalCoords(rocket_group, rocket_group.userData.radius, rocket_group.userData.phi, rocket_group.userData.theta)
 
         // rocket angle
         if (pair) {
@@ -309,8 +285,8 @@ function updatePositions() {
             }
         }
 
-        rocket.lookAt(scene.position);
-        rocket.rotateZ(rocket_angle);
+        rocket_group.lookAt(scene.position);
+        rocket_group.rotateZ(rocket_angle);
     }
 
 }
@@ -342,18 +318,18 @@ function updateCameras() {
 
 function checkCollisions() {
     // TODO: dois lixos podem colidir logo desde o inicio?
-    const quadrant = getPositionQuadrant(...rocket.position);
+    const quadrant = getPositionQuadrant(...rocket_group.position);
 
     cubeTrashes[quadrant].forEach((cube, idx) => {
         const cube_sphere_radius = 8 * Math.sqrt(3) / 2;
-        if (cube.position.clone().sub(rocket.position).length() <= (15 + cube_sphere_radius)) {
+        if (cube.position.clone().sub(rocket_group.position).length() <= (15 + cube_sphere_radius)) {
             cube.clear();
         }
     });
 
     coneTrashes[quadrant].forEach((cone, idx) => {
         const cone_sphere_radius = 10;
-        if (cone.position.clone().sub(rocket.position).length() <= (15 + cone_sphere_radius)) {
+        if (cone.position.clone().sub(rocket_group.position).length() <= (15 + cone_sphere_radius)) {
             cone.clear();
         }
     });
@@ -426,9 +402,9 @@ function onKeyUp(e) {
 
 function getPositionQuadrant(x, y, z) {
     x_positive = x >= 0 ? 0 : 1;
-    y_positive = y >= 0 ? 0 : 1;
-    z_positive = z >= 0 ? 0 : 1;
-    return x_positive + y_positive * 2 + z_positive * 4;
+    y_positive = y >= 0 ? 0 : 2;
+    z_positive = z >= 0 ? 0 : 4;
+    return x_positive + y_positive + z_positive;
 }
 
 function setFromSphericalCoords(object, radius, phi, theta) {
