@@ -1,10 +1,11 @@
 //  ---------------- Three.js Global Variables ---------------- //
+
 const clock = new THREE.Clock();
 var camera, scene, renderer;
 var geometry, mesh;
 
 // 0 - front, 1 - top, 2 - right
-var cameras = [];
+var cameras = new Array();
 
 //  ---------------- Object Variables ---------------- //
 const radius = 300;
@@ -14,44 +15,25 @@ var rocket;
 
 // quadrants
 const cubeTrashes = {
-    0: [],
-    1: [],
-    2: [],
-    3: [],
-    4: [],
-    5: [],
-    6: [],
-    7: [],
+    0: new Array(), 1: new Array(), 2: new Array(), 3: new Array(),
+    4: new Array(), 5: new Array(), 6: new Array(), 7: new Array(),
 }
 
 const coneTrashes = {
-    0: [],
-    1: [],
-    2: [],
-    3: [],
-    4: [],
-    5: [],
-    6: [],
-    7: [],
+    0: new Array(), 1: new Array(), 2: new Array(), 3: new Array(),
+    4: new Array(), 5: new Array(), 6: new Array(), 7: new Array(),
 }
 
 //  ---------------- Controllers ---------------- //
+
 const jump = THREE.Math.degToRad(60);
 
-
 var rocket_controller = {
-    39: { pressed: false, offset: [0, 0, jump] , rotation : Math.PI / 2},   // right
-    37: { pressed: false, offset: [0, 0, - jump] , rotation : - Math.PI / 2}, // left
-    38: { pressed: false, offset: [0, - jump, 0] , rotation : 0},   // up
-    40: { pressed: false, offset: [0, jump, 0] , rotation : Math.PI}, // down
+    39: { pressed: false, offset: new THREE.Vector3(0, 0, jump), rotation: Math.PI / 2 },     // right
+    37: { pressed: false, offset: new THREE.Vector3(0, 0, - jump), rotation: - Math.PI / 2 }, // left
+    38: { pressed: false, offset: new THREE.Vector3(0, - jump, 0), rotation: 0 },             // up
+    40: { pressed: false, offset: new THREE.Vector3(0, jump, 0), rotation: Math.PI },         // down
 }
-
-function setFromSphericalCoords1(object, radius, phi, theta) {
-    object.position.x = radius * Math.sin(phi) * Math.sin(theta);
-    object.position.y = radius * Math.cos(phi);
-    object.position.z = radius * Math.sin(phi) * Math.cos(theta);
-}
-
 
 //  ---------------- Object creation ------------------- //
 
@@ -110,7 +92,7 @@ function createRocket() {
     var phi = Math.random() * Math.PI * 2;
     var theta = Math.random() * Math.PI * 2;
 
-    setFromSphericalCoords1(rocket, radius * 1.2, 3 * Math.PI /2, 0);
+    setFromSphericalCoords(rocket, radius * 1.2, 3 * Math.PI / 2, 0);
     rocket.lookAt(scene.position);
 
     scene.add(rocket);
@@ -130,7 +112,7 @@ function createTrash() {
         var phi = Math.random() * Math.PI * 2;
         var theta = Math.random() * Math.PI * 2;
 
-        setFromSphericalCoords1(cubeTrash, radius * 1.2, phi, theta);
+        setFromSphericalCoords(cubeTrash, radius * 1.2, phi, theta);
 
         cubeTrash.rotateX(Math.random() * Math.PI * 2);
         cubeTrash.rotateY(Math.random() * Math.PI * 2);
@@ -153,7 +135,7 @@ function createTrash() {
         var phi = Math.random() * Math.PI * 2;
         var theta = Math.random() * Math.PI * 2;
 
-        setFromSphericalCoords1(coneTrash, radius * 1.2, phi, theta);
+        setFromSphericalCoords(coneTrash, radius * 1.2, phi, theta);
 
         coneTrash.rotateX(Math.random() * Math.PI * 2);
         coneTrash.rotateY(Math.random() * Math.PI * 2);
@@ -166,11 +148,12 @@ function createTrash() {
 }
 
 //  ---------------- Lights Creation ---------------- //
+
 function createLights() {
-    const light1 = new THREE.DirectionalLight(0x404040, 7); // soft white light
-    const light2 = new THREE.AmbientLight(0x404040, 1); // soft white light
-    scene.add(light1);
-    scene.add(light2);
+    const dlight = new THREE.DirectionalLight(0x404040, 7);
+    const alight = new THREE.AmbientLight(0x404040, 1);
+    scene.add(dlight);
+    scene.add(alight);
 }
 
 
@@ -218,11 +201,11 @@ function setupScene() {
     'use strict';
     scene = new THREE.Scene();
 
-    // Adding Axis to the Scene
-    scene.add(new THREE.AxesHelper(50));
-
     // Add scene background
     scene.background = new THREE.TextureLoader().load('textures/stars_texture.jpg');
+
+    // Adding Axis to the Scene
+    scene.add(new THREE.AxesHelper(50));
 
     // Creating objects
     createPlanet(0, 0, 0);
@@ -240,7 +223,7 @@ function updateVirtualCamera() {
     rocket_pos = new THREE.Spherical().setFromVector3(rocket.position);
 
     // virtual camera position
-    setFromSphericalCoords1(cameras[2], rocket_pos.radius + 150, rocket_pos.phi + Math.PI/20, rocket_pos.theta);
+    setFromSphericalCoords(cameras[2], rocket_pos.radius + 150, rocket_pos.phi + Math.PI / 20, rocket_pos.theta);
 
     // virtual camera looking at rocket
     cameras[2].lookAt(rocket.position);
@@ -249,74 +232,74 @@ function updateVirtualCamera() {
 // ---------------- Update Scene ---------------- //
 
 function updatePositions() {
-    function add_vector(a, b) {
-        return a.map((e, i) => e + b[i]);
-    }
-
     const delta = clock.getDelta();
 
-    var final_offset = [0, 0, 0];
-    var rocket_angle = 0;
     var pair = true;
     var move = false;
+    var rocket_angle = 0;
+    var final_offset = new THREE.Vector3(0, 0, 0);
     Object.keys(rocket_controller).forEach((key) => {
         if (rocket_controller[key].pressed) {
-            final_offset = add_vector(final_offset, rocket_controller[key].offset);
-            rocket_angle = rocket_angle + rocket_controller[key].rotation;
             pair = !pair;
             move = true;
+
+            final_offset = final_offset.add(rocket_controller[key].offset);
+            rocket_angle = rocket_angle + rocket_controller[key].rotation;
         }
     });
+
 
     if (move) {
         // add offset to old position
         const rocket_old_pos_spherical = new THREE.Spherical().setFromVector3(rocket.position);
-        var new_radius = rocket_old_pos_spherical.radius + final_offset[0] * delta;
-        var new_phi = rocket_old_pos_spherical.phi + final_offset[1] * delta;
-        var new_theta = rocket_old_pos_spherical.theta + final_offset[2] * delta;
+
+        final_offset = final_offset.normalize()
+
+        var new_radius = rocket_old_pos_spherical.radius + final_offset.x * delta;
+        var new_phi = rocket_old_pos_spherical.phi + final_offset.y * delta;
+        var new_theta = rocket_old_pos_spherical.theta + final_offset.z * delta;
+
         var flag = false;
-        
-        // if (new_phi <= 0) {
-        //     flag = true;
-        //     new_phi = Math.PI / 100;
-        //     console.log("1", rocket_controller)
-        // }
-        // if (new_phi >= Math.PI) {
-        //     flag = true;
-        //     new_phi = Math.PI - Math.PI / 100;
-        //     console.log("2", rocket_controller)
-        // }
-        // if (flag) {
-        //     new_theta = new_theta + Math.PI;
-        //     const new_jump_38 = - rocket_controller[38].offset[1];
-        //     const new_rotation_38 = (rocket_controller[38].rotation == 0) ? Math.PI : 0;
-        //     rocket_controller[38].offset[1] = new_jump_38;
-        //     rocket_controller[38].rotation = new_rotation_38;
-        //     const new_jump_40 = - rocket_controller[40].offset[1];
-        //     const new_rotation_40 = (rocket_controller[40].rotation == 0) ? Math.PI : 0;
-        //     rocket_controller[40].offset[1] = new_jump_40;
-        //     rocket_controller[40].rotation = new_rotation_40;
+        if (new_phi <= 0) {
+            flag = true;
+            new_phi = Math.PI / 10;
+            console.log("1", rocket_controller)
+        }
+        if (new_phi >= Math.PI) {
+            flag = true;
+            new_phi = Math.PI - Math.PI / 10;
+            console.log("2", rocket_controller)
+        }
+        if (flag) {
+            new_theta = new_theta + Math.PI;
+            const new_jump_38 = - rocket_controller[38].offset[1];
+            const new_rotation_38 = (rocket_controller[38].rotation == 0) ? Math.PI : 0;
+            rocket_controller[38].offset[1] = new_jump_38;
+            rocket_controller[38].rotation = new_rotation_38;
+            const new_jump_40 = - rocket_controller[40].offset[1];
+            const new_rotation_40 = (rocket_controller[40].rotation == 0) ? Math.PI : 0;
+            rocket_controller[40].offset[1] = new_jump_40;
+            rocket_controller[40].rotation = new_rotation_40;
 
-        //     // TODO
-        //     const new_jump_39 = - rocket_controller[39].offset[2];
-        //     const new_rotation_39 = - rocket_controller[39].rotation;
-        //     rocket_controller[39].offset[2] = new_jump_39;
-        //     rocket_controller[39].rotation = new_rotation_39;
+            // TODO
+            const new_jump_39 = - rocket_controller[39].offset[2];
+            const new_rotation_39 = - rocket_controller[39].rotation;
+            rocket_controller[39].offset[2] = new_jump_39;
+            rocket_controller[39].rotation = new_rotation_39;
 
-        //     const new_jump_37 = - rocket_controller[37].offset[2];
-        //     const new_rotation_37 = - rocket_controller[37].rotation;
-        //     rocket_controller[37].offset[2] = new_jump_37;
-        //     rocket_controller[37].rotation = new_rotation_37;
+            const new_jump_37 = - rocket_controller[37].offset[2];
+            const new_rotation_37 = - rocket_controller[37].rotation;
+            rocket_controller[37].offset[2] = new_jump_37;
+            rocket_controller[37].rotation = new_rotation_37;
 
-        // }
+        }
 
-        
-        setFromSphericalCoords1(rocket,
+        setFromSphericalCoords(rocket,
             new_radius,
             new_phi,
             new_theta
         )
-    
+
         // rocket angle
         if (pair) {
             rocket_angle = rocket_angle / 2;
@@ -353,10 +336,12 @@ function updateCameras() {
             c.updateProjectionMatrix();
         }
     });
+
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 function checkCollisions() {
+    // TODO: dois lixos podem colidir logo desde o inicio?
     const quadrant = getPositionQuadrant(...rocket.position);
 
     cubeTrashes[quadrant].forEach((cube, idx) => {
@@ -444,4 +429,10 @@ function getPositionQuadrant(x, y, z) {
     y_positive = y >= 0 ? 0 : 1;
     z_positive = z >= 0 ? 0 : 1;
     return x_positive + y_positive * 2 + z_positive * 4;
+}
+
+function setFromSphericalCoords(object, radius, phi, theta) {
+    object.position.x = radius * Math.sin(phi) * Math.sin(theta);
+    object.position.y = radius * Math.cos(phi);
+    object.position.z = radius * Math.sin(phi) * Math.cos(theta);
 }
