@@ -96,7 +96,8 @@ function createTrash() {
         var cubeTrash = new THREE.Object3D();
 
         geometry = new THREE.BoxGeometry(8, 8, 8);
-        mesh = createPrimitive(0, 0, 0, 0x0cbc1b9, geometry, null, null, null, null, null);
+        var texture = new THREE.TextureLoader().load('textures/asteroid_texture.jpg');
+        mesh = createPrimitive(0, 0, 0, null, geometry, null, null, null, null, texture);
 
         cubeTrash.add(mesh);
 
@@ -119,7 +120,8 @@ function createTrash() {
         var coneTrash = new THREE.Object3D();
 
         geometry = new THREE.ConeGeometry(4, 15, 32);
-        mesh = createPrimitive(0, 0, 0, 0x0a48984, geometry, null, null, null, null, null);
+        var texture = new THREE.TextureLoader().load('textures/metallic_texture.jpg');
+        mesh = createPrimitive(0, 0, 0, null, geometry, null, null, null, null, texture);
 
         coneTrash.add(mesh);
 
