@@ -46,6 +46,13 @@ var rocket_controller = {
     40: { pressed: false, offset: [0, jump, 0] , rotation : Math.PI}, // down
 }
 
+function setFromSphericalCoords1(object, radius, phi, theta) {
+    object.position.x = radius * Math.sin(phi) * Math.sin(theta);
+    object.position.y = radius * Math.cos(phi);
+    object.position.z = radius * Math.sin(phi) * Math.cos(theta);
+}
+
+
 //  ---------------- Object creation ------------------- //
 
 function createPrimitive(x, y, z, obj_color, obj_geometry, rot_x, rot_y, rot_z, obj_side, texture) {
@@ -103,7 +110,7 @@ function createRocket() {
     var phi = Math.random() * Math.PI * 2;
     var theta = Math.random() * Math.PI * 2;
 
-    rocket.position.setFromSphericalCoords(radius * 1.2, phi, theta);
+    setFromSphericalCoords1(rocket, radius * 1.2, 3 * Math.PI /2, 0);
     rocket.lookAt(scene.position);
 
     scene.add(rocket);
@@ -123,7 +130,7 @@ function createTrash() {
         var phi = Math.random() * Math.PI * 2;
         var theta = Math.random() * Math.PI * 2;
 
-        cubeTrash.position.setFromSphericalCoords(radius * 1.2, phi, theta);
+        setFromSphericalCoords1(cubeTrash, radius * 1.2, phi, theta);
 
         cubeTrash.rotateX(Math.random() * Math.PI * 2);
         cubeTrash.rotateY(Math.random() * Math.PI * 2);
@@ -146,7 +153,7 @@ function createTrash() {
         var phi = Math.random() * Math.PI * 2;
         var theta = Math.random() * Math.PI * 2;
 
-        coneTrash.position.setFromSphericalCoords(radius * 1.2, phi, theta);
+        setFromSphericalCoords1(coneTrash, radius * 1.2, phi, theta);
 
         coneTrash.rotateX(Math.random() * Math.PI * 2);
         coneTrash.rotateY(Math.random() * Math.PI * 2);
@@ -233,7 +240,7 @@ function updateVirtualCamera() {
     rocket_pos = new THREE.Spherical().setFromVector3(rocket.position);
 
     // virtual camera position
-    cameras[2].position.setFromSphericalCoords(rocket_pos.radius + 200, rocket_pos.phi, rocket_pos.theta);
+    setFromSphericalCoords1(cameras[2], rocket_pos.radius + 150, rocket_pos.phi + Math.PI/20, rocket_pos.theta);
 
     // virtual camera looking at rocket
     cameras[2].lookAt(rocket.position);
@@ -264,48 +271,48 @@ function updatePositions() {
     if (move) {
         // add offset to old position
         const rocket_old_pos_spherical = new THREE.Spherical().setFromVector3(rocket.position);
+        var new_radius = rocket_old_pos_spherical.radius + final_offset[0] * delta;
         var new_phi = rocket_old_pos_spherical.phi + final_offset[1] * delta;
         var new_theta = rocket_old_pos_spherical.theta + final_offset[2] * delta;
         var flag = false;
         
-        if (new_phi <= 0) {
-            flag = true;
-            new_phi = Math.PI / 100;
-            console.log("1", rocket_controller)
-        }
-        if (new_phi >= Math.PI) {
-            flag = true;
-            new_phi = Math.PI - Math.PI / 100;
-            console.log("2", rocket_controller)
-        }
-        if (flag) {
-            new_theta = new_theta + Math.PI;
-            const new_jump_38 = - rocket_controller[38].offset[1];
-            const new_rotation_38 = (rocket_controller[38].rotation == 0) ? Math.PI : 0;
-            rocket_controller[38].offset[1] = new_jump_38;
-            rocket_controller[38].rotation = new_rotation_38;
-            const new_jump_40 = - rocket_controller[40].offset[1];
-            const new_rotation_40 = (rocket_controller[40].rotation == 0) ? Math.PI : 0;
-            rocket_controller[40].offset[1] = new_jump_40;
-            rocket_controller[40].rotation = new_rotation_40;
+        // if (new_phi <= 0) {
+        //     flag = true;
+        //     new_phi = Math.PI / 100;
+        //     console.log("1", rocket_controller)
+        // }
+        // if (new_phi >= Math.PI) {
+        //     flag = true;
+        //     new_phi = Math.PI - Math.PI / 100;
+        //     console.log("2", rocket_controller)
+        // }
+        // if (flag) {
+        //     new_theta = new_theta + Math.PI;
+        //     const new_jump_38 = - rocket_controller[38].offset[1];
+        //     const new_rotation_38 = (rocket_controller[38].rotation == 0) ? Math.PI : 0;
+        //     rocket_controller[38].offset[1] = new_jump_38;
+        //     rocket_controller[38].rotation = new_rotation_38;
+        //     const new_jump_40 = - rocket_controller[40].offset[1];
+        //     const new_rotation_40 = (rocket_controller[40].rotation == 0) ? Math.PI : 0;
+        //     rocket_controller[40].offset[1] = new_jump_40;
+        //     rocket_controller[40].rotation = new_rotation_40;
 
-            // TODO
-            const new_jump_39 = - rocket_controller[39].offset[2];
-            const new_rotation_39 = - rocket_controller[39].rotation;
-            rocket_controller[39].offset[2] = new_jump_39;
-            rocket_controller[39].rotation = new_rotation_39;
+        //     // TODO
+        //     const new_jump_39 = - rocket_controller[39].offset[2];
+        //     const new_rotation_39 = - rocket_controller[39].rotation;
+        //     rocket_controller[39].offset[2] = new_jump_39;
+        //     rocket_controller[39].rotation = new_rotation_39;
 
-            const new_jump_37 = - rocket_controller[37].offset[2];
-            const new_rotation_37 = - rocket_controller[37].rotation;
-            rocket_controller[37].offset[2] = new_jump_37;
-            rocket_controller[37].rotation = new_rotation_37;
+        //     const new_jump_37 = - rocket_controller[37].offset[2];
+        //     const new_rotation_37 = - rocket_controller[37].rotation;
+        //     rocket_controller[37].offset[2] = new_jump_37;
+        //     rocket_controller[37].rotation = new_rotation_37;
 
-        }
-
+        // }
 
         
-        rocket.position.setFromSphericalCoords(
-            rocket_old_pos_spherical.radius + final_offset[0] * delta,
+        setFromSphericalCoords1(rocket,
+            new_radius,
             new_phi,
             new_theta
         )
