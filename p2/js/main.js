@@ -10,7 +10,8 @@ var cameras = new Array();
 //  ---------------- Object Variables ---------------- //
 const radius = 300;
 const cone_collision_radius = radius * (2 / (63 * Math.sqrt(3)));
-const cube_collision_radius = radius / 21;
+const cube_collision_radius = radius / 42;
+const rocket_collision_radius = 13 * radius / 275;
 
 var planet;
 var rocket;
@@ -41,8 +42,8 @@ var rocket_controller = {
 
 //  ---------------- Object creation ------------------- //
 
-function createPrimitive(x, y, z, obj_color, obj_geometry, rot_x, rot_y, rot_z, obj_side, texture) {
-    material = new THREE.MeshPhongMaterial({ color: obj_color, wireframe: false, side: obj_side, map: texture });
+function createPrimitive(x, y, z, obj_color = null, obj_geometry, rot_x = 0, rot_y = 0, rot_z = 0, obj_side = null, texture = null, wireframe = false) {
+    material = new THREE.MeshPhongMaterial({ color: obj_color, wireframe: wireframe, side: obj_side, map: texture });
     geometry = obj_geometry;
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
@@ -95,6 +96,12 @@ function createRocket() {
     var geometry = new THREE.CylinderGeometry(0, 0.15 * height, 0.3 * height, 30);
     mesh = createPrimitive(0, 0.45 * height, 0, 0xf73c3c, geometry, null, null, null, null, null);
     rocket.add(mesh);
+
+    // collision sphere
+    geometry = new THREE.SphereGeometry(rocket_collision_radius, 10, 10);
+    mesh = createPrimitive(0, 2.2, 0, 0xf73c3c, geometry, null, null, null, null, null, true);
+
+    rocket.add(mesh);
 }
 
 function createTrash() {
@@ -102,12 +109,17 @@ function createTrash() {
     const height = radius / (21 * Math.sqrt(3));
 
     // Trash - cubes
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < 20; i++) {
         var cubeTrash = new THREE.Object3D();
 
         geometry = new THREE.BoxGeometry(height, height, height);
         var texture = new THREE.TextureLoader().load('textures/asteroid_texture.jpg');
-        mesh = createPrimitive(0, 0, 0, null, geometry, null, null, null, null, texture);
+        mesh = createPrimitive(0, 0, 0, null, geometry, null, null, null, null, texture = texture, null);
+        cubeTrash.add(mesh);
+
+        // collision sphere
+        geometry = new THREE.SphereGeometry(cube_collision_radius, 10, 10);
+        mesh = createPrimitive(0, 0, 0, 0xf73c3c, geometry, null, null, null, null, null, true);
 
         cubeTrash.add(mesh);
 
@@ -132,12 +144,18 @@ function createTrash() {
     }
 
     // Trash - cone
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < 20; i++) {
         var coneTrash = new THREE.Object3D();
 
-        geometry = new THREE.ConeGeometry(height * (1 / Math.sqrt(3)), height, 32);
+        geometry = new THREE.ConeGeometry(height / Math.sqrt(3), height, 32);
         var texture = new THREE.TextureLoader().load('textures/metallic_texture.jpg');
-        mesh = createPrimitive(0, 0, 0, null, geometry, null, null, null, null, texture);
+        mesh = createPrimitive(0, 0, 0, null, geometry, null, null, null, null, texture, null);
+
+        coneTrash.add(mesh);
+
+        // collision sphere
+        geometry = new THREE.SphereGeometry(cone_collision_radius, 10, 10);
+        mesh = createPrimitive(0, - height / 6, 0, 0xf73c3c, geometry, null, null, null, null, null, true);
 
         coneTrash.add(mesh);
 
@@ -241,7 +259,7 @@ function setupRocketGroup() {
     // Getting Random Coordinates
     var phi = Math.random() * Math.PI * 2;
     var theta = Math.random() * Math.PI * 2;
-    setFromSphericalCoords(rocket_group, radius * 1.2, 3 * Math.PI / 2, 0);
+    setFromSphericalCoords(rocket_group, radius * 1.2, phi, theta);
     rocket_group.userData = { radius: radius * 1.2, phi: phi, theta: theta };
     rocket_group.lookAt(scene.position);
     scene.add(rocket_group);
