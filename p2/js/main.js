@@ -60,6 +60,9 @@ function createPlanet(x, y, z) {
     planet_material.bumpMap = new THREE.TextureLoader().load('textures/mars_bump.png')
     planet_material.bumpScale = 10
 
+    planet_material.displacementMap = new THREE.TextureLoader().load('textures/mars_displacement.jpg')
+    planet_material.displacementScale = 25;
+
     const planet_mesh = new THREE.Mesh(planet_geometry, planet_material);
     planet_mesh.position.set(x, y, z);
     scene.add(planet_mesh);
@@ -89,14 +92,14 @@ function createRocket() {
     rocket.add(mesh);
 
     // nose
-    var geometry = new THREE.CylinderGeometry(0, 0.15 * height,  0.3 * height, 30);
+    var geometry = new THREE.CylinderGeometry(0, 0.15 * height, 0.3 * height, 30);
     mesh = createPrimitive(0, 0.45 * height, 0, 0xf73c3c, geometry, null, null, null, null, null);
     rocket.add(mesh);
 }
 
 function createTrash() {
     const trash_radius = radius * 1.2;
-    const height = radius / ( 21 * Math.sqrt(3));
+    const height = radius / (21 * Math.sqrt(3));
 
     // Trash - cubes
     for (i = 0; i < 10; i++) {
