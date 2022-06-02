@@ -9,7 +9,7 @@ var cameras = new Array();
 
 //  ---------------- Object Variables ---------------- //
 
-const radius = 300;
+const radius = 250;
 const cone_collision_radius = radius * (2 / (63 * Math.sqrt(3)));
 const cube_collision_radius = radius / 42;
 const rocket_collision_radius = 13 * radius / 275;
