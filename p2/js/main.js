@@ -58,7 +58,7 @@ function createPrimitive(x, y, z, obj_color = null, obj_geometry, rot_x = 0, rot
 }
 
 function createPlanet(x, y, z) {
-    const planet_geometry = new THREE.SphereGeometry(radius, 40, 256);
+    const planet_geometry = new THREE.SphereGeometry(radius, 40, 128);
 
     const planet_material = new THREE.MeshPhongMaterial();
     planet_material.map = new THREE.TextureLoader().load('textures/mars_texture.jpg');
