@@ -8,6 +8,7 @@ var camera, scene, renderer;
 var cameras = new Array();
 
 //  ---------------- Object Variables ---------------- //
+
 const radius = 300;
 const cone_collision_radius = radius * (2 / (63 * Math.sqrt(3)));
 const cube_collision_radius = radius / 42;
@@ -28,6 +29,9 @@ const coneTrashes = {
     0: new Array(), 1: new Array(), 2: new Array(), 3: new Array(),
     4: new Array(), 5: new Array(), 6: new Array(), 7: new Array(),
 }
+
+// Collisison Spheres
+const collision_spheres = new Array();
 
 //  ---------------- Controllers ---------------- //
 
@@ -97,10 +101,11 @@ function createRocket() {
     mesh = createPrimitive(0, 0.45 * height, 0, 0xf73c3c, geometry, null, null, null, null, null);
     rocket.add(mesh);
 
-    // collision sphere
+    // Adding Collision Sphere
     geometry = new THREE.SphereGeometry(rocket_collision_radius, 10, 10);
     mesh = createPrimitive(0, 2.2, 0, 0xf73c3c, geometry, null, null, null, null, null, true);
-
+    collision_spheres.push(mesh);
+    mesh.visible = false;
     rocket.add(mesh);
 }
 
@@ -109,7 +114,7 @@ function createTrash() {
     const height = radius / (21 * Math.sqrt(3));
 
     // Trash - cubes
-    for (i = 0; i < 20; i++) {
+    for (i = 0; i < 10; i++) {
         var cubeTrash = new THREE.Object3D();
 
         geometry = new THREE.BoxGeometry(height, height, height);
@@ -117,10 +122,11 @@ function createTrash() {
         mesh = createPrimitive(0, 0, 0, null, geometry, null, null, null, null, texture = texture, null);
         cubeTrash.add(mesh);
 
-        // collision sphere
+        // Adding the Collision Sphere
         geometry = new THREE.SphereGeometry(cube_collision_radius, 10, 10);
         mesh = createPrimitive(0, 0, 0, 0xf73c3c, geometry, null, null, null, null, null, true);
-
+        mesh.visible = false;
+        collision_spheres.push(mesh);
         cubeTrash.add(mesh);
 
         // Random Coordinates
@@ -144,7 +150,7 @@ function createTrash() {
     }
 
     // Trash - cone
-    for (i = 0; i < 20; i++) {
+    for (i = 0; i < 10; i++) {
         var coneTrash = new THREE.Object3D();
 
         geometry = new THREE.ConeGeometry(height / Math.sqrt(3), height, 32);
@@ -153,10 +159,11 @@ function createTrash() {
 
         coneTrash.add(mesh);
 
-        // collision sphere
+        // Adding the Collision Sphere
         geometry = new THREE.SphereGeometry(cone_collision_radius, 10, 10);
         mesh = createPrimitive(0, - height / 6, 0, 0xf73c3c, geometry, null, null, null, null, null, true);
-
+        mesh.visible = false;
+        collision_spheres.push(mesh);
         coneTrash.add(mesh);
 
         // Random Coordinates
@@ -365,10 +372,10 @@ function updateCameras() {
 }
 
 function checkRocketTrashCollisions() {
+    const rocket_collision_radius = 15;
     const quadrant = getPositionQuadrant(...rocket_group.position);
-
     cubeTrashes[quadrant].filter((cube) => {
-        if (areColliding(cube.position.clone(), rocket_group.position, 15, cube_collision_radius)) {
+        if (areColliding(cube.position.clone(), rocket_group.position, rocket_collision_radius, cube_collision_radius)) {
             scene.remove(cube);
             return true;
         }
@@ -377,12 +384,18 @@ function checkRocketTrashCollisions() {
     });
 
     coneTrashes[quadrant].filter((cone) => {
-        if (areColliding(cone.position.clone(), rocket_group.position, 15, cone_collision_radius)) {
+        if (areColliding(cone.position.clone(), rocket_group.position, rocket_collision_radius, cone_collision_radius)) {
             scene.remove(cone);
             return true;
         }
         return false;
     });
+}
+
+function toggleCollisionSpheresVisibility() {
+    collision_spheres.forEach((sphere) => {
+        sphere.visible = !sphere.visible;
+    })
 }
 
 // ---------------- Cameras ---------------- //
@@ -439,6 +452,10 @@ function onKeyDown(e) {
         case 52: // '4'
             updateDisplayType();
             break;
+
+        // Toggle Collision Spheres Visibility
+        case 57:
+            toggleCollisionSpheresVisibility();
     }
 }
 
