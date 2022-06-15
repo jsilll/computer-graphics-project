@@ -18,6 +18,12 @@ var origami1;
 var origami2;
 var origami3;
 
+var podium;
+var plane;
+var spotlightobj1;
+var spotlightobj2;
+var spotlightobj3;
+
 //  ---------------- Light Variables ---------------- //
 
 const spotlights_color = 0x404040;
@@ -93,9 +99,11 @@ function createPlane() {
     var material = new THREE.MeshPhongMaterial({ color: plane_color });
     var geometry = new THREE.PlaneGeometry(plane_size, plane_size, plane_segments, plane_segments);
     var mesh = new THREE.Mesh(geometry, material);
+    mesh.userData = {PhongMaterial : new THREE.MeshPhongMaterial({ color: plane_color }), LambertMaterial: new THREE.MeshLambertMaterial({ color: plane_color })}
     mesh.rotation.x = - Math.PI / 2;
     mesh.receiveShadow = true;
     scene.add(mesh);
+    return mesh;
 }
 
 function createPodium(x, y, z) {
@@ -123,10 +131,17 @@ function createPodium(x, y, z) {
     const mesh2 = new THREE.Mesh(geometry2, material);
     mesh2.position.set(x, y + 2, z);
 
+    mesh1.userData = {PhongMaterial : new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial()}
+    mesh2.userData = {PhongMaterial : new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial()}
+
     mesh1.receiveShadow = true;
     mesh2.receiveShadow = true;
-    scene.add(mesh1);
-    scene.add(mesh2);
+
+    const mesh = new THREE.Object3D();
+    mesh.add(mesh1);
+    mesh.add(mesh2)
+    scene.add(mesh);
+    return mesh;
 }
 
 function createSpotLightObject(x, y, z) {
@@ -141,12 +156,17 @@ function createSpotLightObject(x, y, z) {
     const sphere = new THREE.Mesh(sphere_geometry, material);
     sphere.position.set(0, - cone_height / 2, 0);
     const cone = new THREE.Mesh(cone_geometry, material);
+    sphere.userData = {PhongMaterial : new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial()}
+    cone.userData = {PhongMaterial : new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial()}
 
     const obj = new THREE.Object3D();
     obj.add(sphere);
     obj.add(cone);
     obj.position.set(x, y, z);
+
     scene.add(obj);
+
+    return obj;
 }
 
 function createOrigami1(x, y, z) {
@@ -175,10 +195,11 @@ function createOrigami1(x, y, z) {
     origami1.position.set(x, y, z);
     origami1.rotateX(Math.PI / 4);
     origami1.castShadow = true;
+    origami1.userData = {PhongMaterial : new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial()}
+
     scene.add(origami1);
 
-    // TODO: Model This
-    // const geometry = new THREE.BoxGeometry(1, 1, 1);
+    return origami1;
 }
 function createOrigami2(x, y, z) {
     'use strict';
@@ -234,7 +255,11 @@ function createOrigami2(x, y, z) {
     origami2 = new THREE.Mesh(geometry, material);
     origami2.position.set(x, y, z);
     origami2.castShadow = true;
+    origami2.userData = {PhongMaterial : material, LambertMaterial: new THREE.MeshLambertMaterial()}
+
     scene.add(origami2);
+    return origami2;
+
 }
 function createOrigami3(x, y, z) {
     'use strict';
@@ -331,7 +356,11 @@ function createOrigami3(x, y, z) {
     origami3 = new THREE.Mesh(geometry, material);
     origami3.position.set(x, y, z);
     origami3.castShadow = true;
+    origami3.userData = {PhongMaterial : new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial()}
+
     scene.add(origami3);
+    return origami3;
+
 }
 
 //  ---------------- Lights Creation ---------------- //
@@ -408,14 +437,15 @@ function setupObjects() {
     // Adding Axis to the Scene
     scene.add(new THREE.AxisHelper(50));
     // Creating objects
-    createPlane();
-    createPodium(0, 0, 0);
-    createOrigami1(-2, 2, 2);
-    createOrigami2(0, 2, 2);
-    createOrigami3(2, 2, 2);
-    createSpotLightObject(-2, spotlights_height, 2);
-    createSpotLightObject(0, spotlights_height, 2);
-    createSpotLightObject(2, spotlights_height, 2);
+    plane = createPlane();
+    podium = createPodium(0, 0, 0);
+    origami1 = createOrigami1(-2, 2, 2)
+    origami2 = createOrigami2(0, 2, 2);
+    origami3 = createOrigami3(2, 2, 2);
+    spotlightobj1 = createSpotLightObject(-2, spotlights_height, 2);
+    spotlightobj2 = createSpotLightObject(0, spotlights_height, 2);
+    spotlightobj3 = createSpotLightObject(2, spotlights_height, 2);
+
 }
 
 function setupCameras() {
@@ -469,6 +499,28 @@ function updateDisplayType() {
         if (node instanceof THREE.Mesh) {
             node.material.wireframe = !node.material.wireframe;
         }
+    });
+}
+
+function toggleMaterial() {
+    const objects = [origami1, origami2, origami3, podium, plane, spotlightobj1, spotlightobj2, spotlightobj3];
+    objects.forEach((object) => {
+       if (object.material instanceof THREE.MeshPhongMaterial) {
+           object.material = object.userData.LambertMaterial;
+       }
+       else if (object.material instanceof THREE.MeshLambertMaterial){
+           object.material = object.userData.PhongMaterial;
+       }
+       else {
+           object.children.forEach((o) => {
+               if (o.material instanceof THREE.MeshPhongMaterial) {
+                   o.material = o.userData.LambertMaterial;
+               }
+               else {
+                   o.material = o.userData.PhongMaterial;
+               }
+           });
+       }
     });
 }
 
@@ -537,6 +589,7 @@ function onKeyDown(e) {
 
         // TODO: Toggle Shading Type
         case 65: // A
+            toggleMaterial();
             break;
         // TODO: Toggle Illumnation Calculations & Animations
         case 83: // S
