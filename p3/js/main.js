@@ -41,18 +41,18 @@ animation_enabled = true;
 const rotation_speed = THREE.Math.degToRad(60);
 
 const origami1_controller = {
-    81: { pressed: false, rotate: (obj, delta) => (obj.rotateY(rotation_speed * delta)) },  // q
-    87: { pressed: false, rotate: (obj, delta) => (obj.rotateY(-rotation_speed * delta)) }, // w
+    81: { pressed: false, rotate: (obj, delta) => (obj.rotateY(-rotation_speed * delta)) },  // q
+    87: { pressed: false, rotate: (obj, delta) => (obj.rotateY(rotation_speed * delta)) }, // w
 }
 
 const origami2_controller = {
-    69: { pressed: false, rotate: (obj, delta) => (obj.rotateY(rotation_speed * delta)) },  // e
-    82: { pressed: false, rotate: (obj, delta) => (obj.rotateY(-rotation_speed * delta)) }, // r
+    69: { pressed: false, rotate: (obj, delta) => (obj.rotateY(-rotation_speed * delta)) },  // e
+    82: { pressed: false, rotate: (obj, delta) => (obj.rotateY(rotation_speed * delta)) }, // r
 }
 
 const origami3_controller = {
-    84: { pressed: false, rotate: (obj, delta) => (obj.rotateY(rotation_speed * delta)) },  // t
-    89: { pressed: false, rotate: (obj, delta) => (obj.rotateY(-rotation_speed * delta)) }, // y
+    84: { pressed: false, rotate: (obj, delta) => (obj.rotateY(-rotation_speed * delta)) },  // t
+    89: { pressed: false, rotate: (obj, delta) => (obj.rotateY(rotation_speed * delta)) }, // y
 }
 
 //  ---------------- Object creation ------------------- //
@@ -62,9 +62,9 @@ function setGeometry(vertices) {
     const normals = [];
     const uvs = [];
     for (const vertex of vertices) {
-      positions.push(...vertex.pos);
-      normals.push(...vertex.norm);
-      uvs.push(...vertex.uv);
+        positions.push(...vertex.pos);
+        normals.push(...vertex.norm);
+        uvs.push(...vertex.uv);
     }
 
     const geometry = new THREE.BufferGeometry();
@@ -154,29 +154,29 @@ function createOrigami1(x, y, z) {
 
     const vertices = [
         // front
-        { pos: [0, -0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [ 0, 0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.5, 0,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.5, 0, 0], norm: [0, 0, 1], uv: [1, 0], },
 
-        { pos: [0,  0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [ 0, -0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [-0.5, 0,  0.2], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [-0.5, 0, 0.2], norm: [0, 0, 1], uv: [1, 0], },
 
     ];
 
     const geometry = setGeometry(vertices);
-    
+
     // TODO: posso usar double side ou cada lado é uma outra face? e se sim como as ponho de "costas" uma para a outra
     const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
-    const material = new THREE.MeshPhongMaterial({side : THREE.DoubleSide, map: texture});
+    const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture });
 
-        
+
     origami1 = new THREE.Mesh(geometry, material);
     origami1.position.set(x, y, z);
     origami1.rotateX(Math.PI / 4);
     origami1.castShadow = true;
     scene.add(origami1);
-    
+
     // TODO: Model This
     // const geometry = new THREE.BoxGeometry(1, 1, 1);
 }
@@ -185,52 +185,52 @@ function createOrigami2(x, y, z) {
     // TODO: Model This
     const vertices = [
         // 1
-        { pos: [0, -0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [ 0, 0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [-1/6, 1/3,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [-1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 2
-        { pos: [0,  0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [ 0, -0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [1/6, 1/3,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 3
-        { pos: [0, 13/48,  0.01], norm: [ 0,  0,  1], uv: [1, 0], },
-        { pos: [-1/6, 1/3,  0], norm: [ 0,  0,  1], uv: [1, 0], },
-        { pos: [ 0, -0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
+        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [-1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
 
         // 4
-        { pos: [0, 13/48,  0.01], norm: [ 0,  0,  1], uv: [1, 0], },
-        { pos: [ 0, -0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [1/6, 1/3,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 7 confirmar
-        { pos: [0, 5/24,  -0.01], norm: [ 0,  0,  1], uv: [1, 0], },
-        { pos: [(-5 * Math.sqrt(0.5)) /24, 5/24,  0], norm: [ 0,  0,  1], uv: [1, 0], },
-        { pos: [ 0, -0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
+        { pos: [0, 5 / 24, -0.01], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [(-5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
 
         // 8 confirmar
-        { pos: [0, 5/24,  -0.01], norm: [ 0,  0,  1], uv: [1, 0], },
-        { pos: [ 0, -0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [(5 * Math.sqrt(0.5)) /24, 5/24,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0, 5 / 24, -0.01], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [(5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 5
-        { pos: [0, 13/48,  0.01], norm: [ 0,  0,  1], uv: [1, 0], },
-        { pos: [ 0, -0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [(5 * Math.sqrt(0.5)) /24, 5/24,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [(5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 6
-        { pos: [0, 13/48,  0.01], norm: [ 0,  0,  1], uv: [1, 0], },
-        { pos: [(-5 * Math.sqrt(0.5)) /24, 5/24,  0], norm: [ 0,  0,  1], uv: [1, 0], },
-        { pos: [ 0, -0.5,  0], norm: [ 0,  0,  1], uv: [1,1], },
+        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [(-5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
 
     ];
 
     const geometry = setGeometry(vertices);
-    
+
     // TODO: posso usar double side ou cada lado é uma outra face? e se sim como as ponho de "costas" uma para a outra
     const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
-    const material = new THREE.MeshPhongMaterial({side : THREE.DoubleSide, map: texture});
+    const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture });
     origami2 = new THREE.Mesh(geometry, material);
     origami2.position.set(x, y, z);
     origami2.castShadow = true;
@@ -241,93 +241,93 @@ function createOrigami3(x, y, z) {
     // TODO: Model This
     const vertices = [
         // 1
-        { pos: [0, 0,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [ 1/12, 1/6,  0], norm: [ 0,  0,  1], uv: [0,1], },
-        { pos: [-1/6, 1/6,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0, 0, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [1 / 12, 1 / 6, 0], norm: [0, 0, 1], uv: [0, 1], },
+        { pos: [-1 / 6, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 2
-        { pos: [0,  0,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [ 0.13, 0.018,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [1/12, 1/6,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0, 0, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.13, 0.018, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [1 / 12, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 3
-        { pos: [0.13,  0.018,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [ 0.24, 1/6,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [1/12, 1/6,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0.13, 0.018, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [1 / 12, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 4
-        { pos: [ 0.13, 0.018,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.29,  0.04,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.24, 1/6,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0.13, 0.018, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.29, 0.04, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 5
-        { pos: [0.29,  0.04,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [ 0.34, 0.15,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.2, 0.35,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0.29, 0.04, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.34, 0.15, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.2, 0.35, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 6
-        { pos: [0.29,  0.04,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.2, 0.35,  0], norm: [ 0,  0,  1], uv: [1, 1], },
-        { pos: [ 0.13, 0.39,  0], norm: [ 0,  0,  1], uv: [1,0], },
+        { pos: [0.29, 0.04, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.2, 0.35, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.13, 0.39, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 7
-        { pos: [ 0.13, 0.39,  0], norm: [ 0,  0,  1], uv: [1,0], },
-        { pos: [0.27,  0.31,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.16, 0.42,  0], norm: [ 0,  0,  1], uv: [1, 1], },
+        { pos: [0.13, 0.39, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0.27, 0.31, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.16, 0.42, 0], norm: [0, 0, 1], uv: [1, 1], },
 
         // 8
-        { pos: [0.29,  0.04,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.34, 0.15,  0], norm: [ 0,  0,  1], uv: [1, 1], },
-        { pos: [ 0.24, 1/6,  0], norm: [ 0,  0,  1], uv: [1,0], },
+        { pos: [0.29, 0.04, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.34, 0.15, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 1 atras
-        { pos: [0, 0,  -0.1], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [ 1/12, 1/6,  0], norm: [ 0,  0,  1], uv: [0,1], },
-        { pos: [-1/6, 1/6,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0, 0, -0.1], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [1 / 12, 1 / 6, 0], norm: [0, 0, 1], uv: [0, 1], },
+        { pos: [-1 / 6, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 2 atras
-        { pos: [0,  0,  -0.1], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [ 0.13, 0.018,  -0.1], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [1/12, 1/6,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0, 0, -0.1], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.13, 0.018, -0.1], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [1 / 12, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 3 atras
-        { pos: [0.13,  0.018,  -0.1], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [ 0.24, 1/6,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [1/12, 1/6,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0.13, 0.018, -0.1], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [1 / 12, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 4 atras
-        { pos: [ 0.13, 0.018,  -0.1], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.29,  0.04,  -0.1], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.24, 1/6,  0], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0.13, 0.018, -0.1], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.29, 0.04, -0.1], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 5 atras
-        { pos: [0.29,  0.04,  -0.1], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [ 0.34, 0.15,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.16, 0.42,  -0.01], norm: [ 0,  0,  1], uv: [1, 0], },
+        { pos: [0.29, 0.04, -0.1], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.34, 0.15, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.16, 0.42, -0.01], norm: [0, 0, 1], uv: [1, 0], },
 
         // 6 atras
-        { pos: [0.29,  0.04,  -0.1], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.16, 0.42,  0], norm: [ 0,  0,  1], uv: [1, 1], },
-        { pos: [ 0.13, 0.39,  -0.05], norm: [ 0,  0,  1], uv: [1,0], },
+        { pos: [0.29, 0.04, -0.1], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.16, 0.42, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.13, 0.39, -0.05], norm: [0, 0, 1], uv: [1, 0], },
 
         // 7 atras
-        { pos: [ 0.13, 0.39,  -0.05], norm: [ 0,  0,  1], uv: [1,0], },
-        { pos: [0.27,  0.31,  0], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.16, 0.42,  0], norm: [ 0,  0,  1], uv: [1, 1], },
+        { pos: [0.13, 0.39, -0.05], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0.27, 0.31, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.16, 0.42, 0], norm: [0, 0, 1], uv: [1, 1], },
 
         // 8 atras
-        { pos: [0.29,  0.04,  -0.1], norm: [ 0,  0,  1], uv: [1,1], },
-        { pos: [0.34, 0.15,  0], norm: [ 0,  0,  1], uv: [1, 1], },
-        { pos: [ 0.24, 1/6,  0], norm: [ 0,  0,  1], uv: [1,0], },
+        { pos: [0.29, 0.04, -0.1], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.34, 0.15, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
 
 
     ];
 
     const geometry = setGeometry(vertices);
-    
+
     // TODO: posso usar double side ou cada lado é uma outra face? e se sim como as ponho de "costas" uma para a outra
     const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
-    const material = new THREE.MeshPhongMaterial({side : THREE.DoubleSide, map: texture});
+    const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture });
     origami3 = new THREE.Mesh(geometry, material);
     origami3.position.set(x, y, z);
     origami3.castShadow = true;
@@ -454,6 +454,15 @@ function updatePositions() {
     }
 }
 
+function resetPositions() {
+    origami1.position.set(-2, 2, 2);
+    origami1.rotateY(0);
+    origami2.position.set(0, 2, 2);
+    origami2.rotateY(0);
+    origami3.position.set(2, 2, 2);
+    origami3.rotateY(0);
+}
+
 function updateDisplayType() {
     'use strict';
     scene.traverse((node) => {
@@ -526,13 +535,13 @@ function onKeyDown(e) {
     // Toggles
     switch (e.keyCode) {
 
-        // TODO: oggle Shading Type
+        // TODO: Toggle Shading Type
         case 65: // A
             break;
         // TODO: Toggle Illumnation Calculations & Animations
         case 83: // S
             animation_enabled = !animation_enabled;
-            if (animation_enabled) { updateInfoMsg(""); } else { updateInfoMsg("Paused"); }
+            if (animation_enabled) { clock.start(); supdateInfoMsg(""); } else { clock.pause(); updateInfoMsg("Paused"); }
             break;
         // Toggle Directional Light
         case 68: // D
@@ -556,6 +565,11 @@ function onKeyDown(e) {
             break;
         case 50:
             camera = cameras[1];
+            break;
+
+        // Reset Scene
+        case 79: // o
+            resetPositions();
             break;
 
         // Toggle Wireframe / Solid Mode 
