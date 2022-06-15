@@ -139,7 +139,7 @@ function createSpotLightObject(x, y, z) {
 
     const material = new THREE.MeshPhongMaterial();
     const sphere = new THREE.Mesh(sphere_geometry, material);
-    sphere.position.set(0, cone_height / 2, 0);
+    sphere.position.set(0, - cone_height / 2, 0);
     const cone = new THREE.Mesh(cone_geometry, material);
 
     const obj = new THREE.Object3D();
@@ -420,7 +420,7 @@ function setupObjects() {
 
 function setupCameras() {
     'use strict';
-    cameras.push(createPerspectiveCamera(1, 3.5, 5, scene.position));
+    cameras.push(createPerspectiveCamera(0, 3, 15, scene.position));
     cameras.push(createOrthoCamera(0, 3.5, 15, scene.position));
     camera = cameras[0];
 }
