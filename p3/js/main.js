@@ -1,4 +1,5 @@
 //  ---------------- Three.js Global Variables ---------------- //
+
 const clock = new THREE.Clock();
 var camera, scene, renderer;
 var cameras = new Array();
@@ -18,8 +19,11 @@ var spotlightobj3;
 
 //  ---------------- Light Variables ---------------- //
 
+const ambient_light_intensity = 2.33;
+
 const spotlights_height = 4;
-const spotlights_intensity = 0.2;
+const spotlights_intensity = 2;
+const spotlights_penumbra = 0.33;
 const spotlights_color = 0x404040;
 const spotlights_spread_angle = Math.PI / 12;
 
@@ -31,9 +35,6 @@ const directional_light_intensity = 0.2;
 const directional_light_color = 0x404040;
 
 var directional_light;
-
-var lambertMaterial;
-var phongMaterial;
 
 //  ---------------- Animation Variables ---------------- //
 
@@ -60,34 +61,27 @@ const origami3_controller = {
 
 //  ---------------- Animation Variables ---------------- //
 
-older_time_offset = 0;
+var older_time_offset = 0;
 
 //  ---------------- Object creation ------------------- //
 
 function setGeometry(vertices) {
-    const positions = [];
+    'use strict';
     const uvs = [];
+    const positions = [];
     for (const vertex of vertices) {
-      positions.push(...vertex.pos);
-      uvs.push(...vertex.uv);
+        positions.push(...vertex.pos);
+        uvs.push(...vertex.uv);
     }
 
-    const geometry = new THREE.BufferGeometry();
-    const positionNumComponents = 3;
     const uvNumComponents = 2;
-    geometry.addAttribute(
-        'position',
-        new THREE.BufferAttribute(new Float32Array(positions), positionNumComponents));
-
-    geometry.addAttribute(
-        'uv',
-        new THREE.BufferAttribute(new Float32Array(uvs), uvNumComponents));
-
+    const positionNumComponents = 3;
+    const geometry = new THREE.BufferGeometry();
+    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), positionNumComponents));
+    geometry.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), uvNumComponents));
     geometry.computeVertexNormals();
 
     return geometry;
-
-
 }
 
 function createFloor() {
@@ -141,7 +135,7 @@ function createPodium(x, y, z) {
     var aoMap = new THREE.TextureLoader().load('textures/wood_ao.jpg');
     aoMap.anisotropy = 16;
     aoMap.encoding = THREE.sRGBEncoding;
-    // TODO:
+
     const default_material = new THREE.MeshPhongMaterial({ map: albedo, aoMap: aoMap });
     default_material.displacementScale = 25;
     default_material.bumpScale = 10;
@@ -150,7 +144,7 @@ function createPodium(x, y, z) {
     const mesh1 = new THREE.Mesh(geometry1, default_material);
     mesh1.position.set(x, y, z);
     const mesh2 = new THREE.Mesh(geometry2, default_material);
-    mesh2.position.set(x, y + 2, z);
+    mesh2.position.set(x, y + 2, z - 2.5);
 
     mesh1.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: albedo, aoMap: aoMap }) }
     mesh2.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: albedo, aoMap: aoMap }) }
@@ -166,11 +160,7 @@ function createPodium(x, y, z) {
 }
 
 function createLightsSupport(x, y, z) {
-    // radiusTop : Float, 
-    // radiusBottom: Float,
-    // height : Float,
-    // radialSegments : Integer
-
+    'use strict';
     const texture = new THREE.TextureLoader().load('textures/metal_texture.jpg');
     texture.anisotropy = 16;
     texture.encoding = THREE.sRGBEncoding;
@@ -180,24 +170,21 @@ function createLightsSupport(x, y, z) {
 
     const vertical_cylinder1 = new THREE.Mesh(vertical_cylinder_geometry, default_material);
     vertical_cylinder1.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }) }
-    const vertical_cylinder2 = new THREE.Mesh(vertical_cylinder_geometry, default_material);
-    vertical_cylinder2.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }) }
-
     vertical_cylinder1.position.set(x, y, z);
     vertical_cylinder1.position.x -= 6;
 
+    const vertical_cylinder2 = new THREE.Mesh(vertical_cylinder_geometry, default_material);
+    vertical_cylinder2.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }) }
     vertical_cylinder2.position.set(x, y, z);
     vertical_cylinder2.position.x += 6;
 
     const horizontal_cylinder_geometry = new THREE.CylinderGeometry(0.05, 0.05, 12.5, 32);
+
     const horizontal_cylinder = new THREE.Mesh(horizontal_cylinder_geometry, default_material);
     horizontal_cylinder.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }) }
-
     horizontal_cylinder.rotateZ(- Math.PI / 2);
     horizontal_cylinder.position.set(x, y, z);
     horizontal_cylinder.position.y += 4.25;
-
-
 
     scene.add(vertical_cylinder1);
     scene.add(vertical_cylinder2);
@@ -206,6 +193,7 @@ function createLightsSupport(x, y, z) {
 }
 
 function createSpotLightObject(x, y, z) {
+    'use strict';
     const sphere_radius = 0.25;
     const sphere_geometry = new THREE.SphereGeometry(sphere_radius, 8, 8);
     const cone_bottom_radius = 0.5;
@@ -236,28 +224,25 @@ function createSpotLightObject(x, y, z) {
 
 function createOrigami1(x, y, z) {
     'use strict';
-
     const geometry = setGeometry(origami1_vertices);
-    const obj = new createMultiMaterialObject( geometry, phongMaterialFront, phongMaterialBack );
+    const obj = new createMultiMaterialObject(geometry, phongMaterialFront, phongMaterialBack);
 
     obj.position.set(x, y, z);
     obj.rotateY(Math.PI);
     obj.rotateX(Math.PI / 7);
     obj.receiveShadow = true;  // Shadows will show up on this object.
     obj.castShadow = true;
-    obj.userData = {PhongMaterial : [phongMaterialFront, phongMaterialBack], LambertMaterial: lambertMaterials}
+    obj.userData = { PhongMaterial: [phongMaterialFront, phongMaterialBack], LambertMaterial: lambertMaterials }
 
     scene.add(obj);
-
     return obj;
-
 }
 function createOrigami2(x, y, z) {
     'use strict';
 
     const colored_geometry = setGeometry(origami2_colored_vertices);
 
-    const origami2_colored = createMultiMaterialObject(colored_geometry, phongMaterialFront, phongMaterialBack );
+    const origami2_colored = createMultiMaterialObject(colored_geometry, phongMaterialFront, phongMaterialBack);
 
     const uncolored_geometry = setGeometry(origami2_uncolored_vertices);
     const origami2_uncolored = new THREE.Mesh(uncolored_geometry, phongMaterialDoubleWhite);
@@ -269,21 +254,17 @@ function createOrigami2(x, y, z) {
     obj.position.set(x, y, z);
     obj.rotateX(-Math.PI / 7);
     obj.castShadow = true;
-    obj.userData = {PhongMaterial : [phongMaterialFront, phongMaterialBack, phongMaterialDoubleWhite] , LambertMaterial: [lambertMaterialFront, lambertMaterialBack, lambertMaterialDoubleWhite]}
+    obj.userData = { PhongMaterial: [phongMaterialFront, phongMaterialBack, phongMaterialDoubleWhite], LambertMaterial: [lambertMaterialFront, lambertMaterialBack, lambertMaterialDoubleWhite] }
 
     obj.receiveShadow = true;  // Shadows will show up on this object.
     scene.add(obj);
     return obj;
-
 }
 
 function createOrigami3(x, y, z) {
     'use strict';
-    // TODO: Model This
-    
-
     const colored_geometry = setGeometry(origami3_colored_vertices);
-    const origami3_colored = createMultiMaterialObject(colored_geometry, phongMaterialFront, phongMaterialBack );
+    const origami3_colored = createMultiMaterialObject(colored_geometry, phongMaterialFront, phongMaterialBack);
 
     const uncolored_geometry = setGeometry(origami3_uncolored_vertices);
     const origami3_uncolored = new THREE.Mesh(uncolored_geometry, phongMaterialDoubleWhite);
@@ -292,19 +273,16 @@ function createOrigami3(x, y, z) {
     const origami3_doublesided = new THREE.Mesh(doublesided_geometry, phongMaterialDoubleTexture);
 
     const obj = new THREE.Group();
-    
     obj.add(origami3_colored);
     obj.add(origami3_uncolored);
     obj.add(origami3_doublesided);
-    
-    
     obj.position.set(x, y, z);
     obj.castShadow = true;
     obj.receiveShadow = true;  // Shadows will show up on this object.
-    obj.userData = {PhongMaterial : [phongMaterialFront, phongMaterialBack, phongMaterialDoubleWhite, phongMaterialDoubleTexture] , LambertMaterial: [lambertMaterialFront, lambertMaterialBack, lambertMaterialDoubleWhite, lambertMaterialDoubleTexture]}
+    obj.userData = { PhongMaterial: [phongMaterialFront, phongMaterialBack, phongMaterialDoubleWhite, phongMaterialDoubleTexture], LambertMaterial: [lambertMaterialFront, lambertMaterialBack, lambertMaterialDoubleWhite, lambertMaterialDoubleTexture] }
+
     scene.add(obj);
     return obj;
-
 }
 
 //  ---------------- Lights Creation ---------------- //
@@ -322,6 +300,7 @@ function setupLights() {
     spotlight1.position.set(origami1.position.x, spotlights_height, origami1.position.z);
     spotlight1.castShadow = true;
     spotlight1.target = origami1;
+    spotlight1.penumbra = spotlights_penumbra;
     scene.add(spotlight1);
 
     // SpotLight 2
@@ -330,6 +309,7 @@ function setupLights() {
     spotlight2.position.set(origami2.position.x, spotlights_height, origami2.position.z);
     spotlight2.castShadow = true;
     spotlight2.target = origami2;
+    spotlight2.penumbra = spotlights_penumbra;
     scene.add(spotlight2);
 
     // SpotLight 3
@@ -338,10 +318,11 @@ function setupLights() {
     spotlight3.position.set(origami3.position.x, spotlights_height, origami3.position.z);
     spotlight3.castShadow = true;
     spotlight3.target = origami3;
+    spotlight3.penumbra = spotlights_penumbra;
     scene.add(spotlight3);
 
     // Ambient Light
-    scene.add(new THREE.AmbientLight(0x404040, 3));
+    scene.add(new THREE.AmbientLight(0x404040, ambient_light_intensity));
 }
 
 //  ---------------- Three.js Functions ---------------- //
@@ -349,8 +330,6 @@ function setupLights() {
 function init() {
     'use strict';
     // Setting up renderer
-
-
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
@@ -384,24 +363,24 @@ function animate() {
 function setupObjects() {
     'use strict';
     scene = new THREE.Scene();
-    // Adding Axis to the Scene
-    // scene.add(new THREE.AxesHelper(50));
-    // Creating objects and setting assigning global variables
+
     plane = createFloor();
     podium = createPodium(0, 0, 0);
-    origami1 = createOrigami1(-3, 2, 3.5)
-    origami2 = createOrigami2(0, 2, 3.5);
-    origami3 = createOrigami3(3, 2, 3.5);
-    createLightsSupport(0, 0, 3.5);
-    spotlightobj1 = createSpotLightObject(-3, spotlights_height, 3.5);
-    spotlightobj2 = createSpotLightObject(0, spotlights_height, 3.5);
-    spotlightobj3 = createSpotLightObject(3, spotlights_height, 3.5);
+    createLightsSupport(0, 0, 2.5);
 
+    origami1 = createOrigami1(-3, 2, 2.5)
+    origami2 = createOrigami2(0, 2, 2.5);
+    origami3 = createOrigami3(3, 2, 2.5);
+
+    // Depends on the Origamis positions
+    spotlightobj1 = createSpotLightObject(-3, spotlights_height, 2.5);
+    spotlightobj2 = createSpotLightObject(0, spotlights_height, 2.5);
+    spotlightobj3 = createSpotLightObject(3, spotlights_height, 2.5);
 }
 
 function setupCameras() {
     'use strict';
-    cameras.push(createPerspectiveCamera(0, 5, 13, scene.position));
+    cameras.push(createPerspectiveCamera(0, 3, 13, scene.position));
     // TODO: maybe mudar os tamanhos de todos os objetos para se ver alguma coisa com a camera ortogonal
     cameras.push(createOrthoCamera(0, 3, 15, scene.position));
     camera = cameras[0];
@@ -437,11 +416,11 @@ function updatePositions() {
 }
 
 function resetPositions() {
-    origami1.position.set(-2, 2, 2);
+    origami1.position.set(-3, 2, 2.5);
     origami1.rotateY(0);
-    origami2.position.set(0, 2, 2);
+    origami2.position.set(0, 2, 2.5);
     origami2.rotateY(0);
-    origami3.position.set(2, 2, 2);
+    origami3.position.set(3, 2, 2.5);
     origami3.rotateY(0);
 }
 
@@ -453,7 +432,7 @@ function updateDisplayType() {
 }
 
 function toggleAllMeshesMaterial() {
-    const objects = [/*origami1, origami2, origami3, */podium, plane, spotlightobj1, spotlightobj2, spotlightobj3];
+    const objects = [origami1, origami2, origami3, podium, plane, spotlightobj1, spotlightobj2, spotlightobj3];
 
     function toggleObject3DMaterial(object3D) {
         object3D.children.forEach((obj) => {
@@ -492,31 +471,6 @@ function toggleAnimations() {
         clock.start();
     }
     animations_enabled = !animations_enabled;
-}
-
-function toggleMaterial() {
-    
-    const objects = [origami1, origami2, origami3, plane, podium, spotlightobj1, spotlightobj2, spotlightobj3];
-    objects.forEach((object) => {
-        if (object instanceof THREE.Mesh) {
-            if (object.material instanceof THREE.MeshPhongMaterial) {
-                object.material = object.userData.LambertMaterial;
-            }
-            else if (object.material instanceof THREE.MeshLambertMaterial){
-                object.material = object.userData.PhongMaterial;
-            }
-        }
-        else {
-            object.children.forEach((o) => {
-                if (o.material instanceof THREE.MeshPhongMaterial) {
-                    o.material = o.userData.LambertMaterial;
-                }
-                else {
-                    o.material = o.userData.PhongMaterial;
-                }
-            });
-        }
-    });
 }
 
 function updateCameras() {
@@ -579,10 +533,8 @@ function onKeyDown(e) {
         return;
     }
 
-    // Toggles
     switch (e.keyCode) {
-
-        // TODO: Toggle Shading Type
+        // Toggle Shading Type
         case 65: // A
             toggleAllMeshesMaterial();
             break;
@@ -614,7 +566,7 @@ function onKeyDown(e) {
             camera = cameras[1];
             break;
 
-        // Reset Scene
+        // Reset Scene TODO: add warning plane
         case 79: // O
             resetPositions();
             break;
@@ -644,18 +596,18 @@ function onKeyUp(e) {
     }
 }
 
-function createMultiMaterialObject(geometry, frontMaterial, backMaterial) {
+// ---------------- Helper Functions ---------------- //
 
+function createMultiMaterialObject(geometry, frontMaterial, backMaterial) {
     var group = new THREE.Group();
 
-    var meshFront = new THREE.Mesh( geometry, frontMaterial);
-    meshFront.userData = {PhongMaterial : frontMaterial, LambertMaterial: lambertMaterialFront}
+    var meshFront = new THREE.Mesh(geometry, frontMaterial);
+    meshFront.userData = { PhongMaterial: frontMaterial, LambertMaterial: lambertMaterialFront }
     group.add(meshFront);
 
-    var meshBack = new THREE.Mesh( geometry, backMaterial);
-    meshBack.userData = {PhongMaterial : backMaterial, LambertMaterial: lambertMaterialBack}
+    var meshBack = new THREE.Mesh(geometry, backMaterial);
+    meshBack.userData = { PhongMaterial: backMaterial, LambertMaterial: lambertMaterialBack }
     group.add(meshBack);
 
     return group;
-
 }
