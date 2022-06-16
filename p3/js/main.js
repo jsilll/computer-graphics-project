@@ -1,5 +1,4 @@
 //  ---------------- Three.js Global Variables ---------------- //
-
 const clock = new THREE.Clock();
 var camera, scene, renderer;
 var cameras = new Array();
@@ -20,7 +19,7 @@ var spotlightobj3;
 //  ---------------- Light Variables ---------------- //
 
 const spotlights_height = 4;
-const spotlights_intensity = 2;
+const spotlights_intensity = 0.2;
 const spotlights_color = 0x404040;
 const spotlights_spread_angle = Math.PI / 12;
 
@@ -28,10 +27,13 @@ var spotlight1;
 var spotlight2;
 var spotlight3;
 
-const directional_light_intensity = 2;
+const directional_light_intensity = 0.2;
 const directional_light_color = 0x404040;
 
 var directional_light;
+
+var lambertMaterial;
+var phongMaterial;
 
 //  ---------------- Animation Variables ---------------- //
 
@@ -64,24 +66,19 @@ older_time_offset = 0;
 
 function setGeometry(vertices) {
     const positions = [];
-    const normals = [];
     const uvs = [];
     for (const vertex of vertices) {
-        positions.push(...vertex.pos);
-        normals.push(...vertex.norm);
-        uvs.push(...vertex.uv);
+      positions.push(...vertex.pos);
+      uvs.push(...vertex.uv);
     }
 
     const geometry = new THREE.BufferGeometry();
     const positionNumComponents = 3;
-    const normalNumComponents = 3;
     const uvNumComponents = 2;
     geometry.addAttribute(
         'position',
         new THREE.BufferAttribute(new Float32Array(positions), positionNumComponents));
-    // geometry.addAttribute(
-    //     'normal',
-    //     new THREE.BufferAttribute(new Float32Array(normals), normalNumComponents));
+
     geometry.addAttribute(
         'uv',
         new THREE.BufferAttribute(new Float32Array(uvs), uvNumComponents));
@@ -90,11 +87,6 @@ function setGeometry(vertices) {
 
     return geometry;
 
-    // const geometry = new THREE.BufferGeometry();
-    // geometry.addAttribute('position', new THREE.BufferAttribute(vertices,3) );
-
-
-    //return geometry
 
 }
 
@@ -102,7 +94,6 @@ function createFloor() {
     'use strict';
     const plane_size = 1000;
     const plane_segments = 10;
-    const plane_color = 0x777777;
 
     var albedo = new THREE.TextureLoader().load('textures/floor_albedo.jpg');
     albedo.wrapS = albedo.wrapT = THREE.RepeatWrapping;
@@ -246,33 +237,15 @@ function createSpotLightObject(x, y, z) {
 function createOrigami1(x, y, z) {
     'use strict';
 
-    const vertices = [
-        // front
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [0, 1], },
-        { pos: [0.5, 0, 0], norm: [0, 0, 1], uv: [1, 1], },
-
-        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [0, 1], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [-0.5, 0, 0.2], norm: [0, 0, 1], uv: [0, 0], },
-
-    ];
-
-    const geometry = setGeometry(vertices);
-
-    const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
-    const materialFront = new THREE.MeshPhongMaterial({ side: THREE.FrontSide, map: texture });
-    const materialBack = new THREE.MeshPhongMaterial({ color: 0xffffff, side: THREE.BackSide });
-    var materials = [materialFront, materialBack];
-
-    const obj = new THREE.SceneUtils.createMultiMaterialObject(geometry, materials);
+    const geometry = setGeometry(origami1_vertices);
+    const obj = new createMultiMaterialObject( geometry, phongMaterialFront, phongMaterialBack );
 
     obj.position.set(x, y, z);
     obj.rotateY(Math.PI);
     obj.rotateX(Math.PI / 7);
     obj.receiveShadow = true;  // Shadows will show up on this object.
     obj.castShadow = true;
-    obj.userData = { PhongMaterial: new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial() }
+    obj.userData = {PhongMaterial : [phongMaterialFront, phongMaterialBack], LambertMaterial: lambertMaterials}
 
     scene.add(obj);
 
@@ -281,62 +254,13 @@ function createOrigami1(x, y, z) {
 }
 function createOrigami2(x, y, z) {
     'use strict';
-    const colored_vertices = [
-        // 1
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [0, 1], },
-        { pos: [-1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [0, 1 - 8 / 24], },
 
-        // 2
-        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [0, 1], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [8 / 24, 1], },
+    const colored_geometry = setGeometry(origami2_colored_vertices);
 
-        // 8
-        { pos: [0, 5 / 24, -0.01], norm: [0, 0, 1], uv: [0, 0], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [(-5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [0, 5 / 24], },
+    const origami2_colored = createMultiMaterialObject(colored_geometry, phongMaterialFront, phongMaterialBack );
 
-        // 7
-        { pos: [0, 5 / 24, -0.01], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [(5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [1 - 5 / 24, 1], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
-
-        // 6
-        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1 - 5 / 12, 1], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [(5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [1 - 5 / 24, 1], },
-
-        // 5
-        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [0, 5 / 12], },
-        { pos: [(-5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [0, 5 / 24], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
-
-    ];
-
-    const uncolored_vertices = [
-        // 3 - branco
-        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [-1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-
-        // 4 -branco
-        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [1, 0], },
-    ];
-
-    const colored_geometry = setGeometry(colored_vertices);
-    const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
-    const materialFront = new THREE.MeshPhongMaterial({ side: THREE.FrontSide, map: texture });
-    const materialBack = new THREE.MeshPhongMaterial({ color: 0xffffff, side: THREE.BackSide });
-    const materials = [materialFront, materialBack];
-
-    const origami2_colored = new THREE.SceneUtils.createMultiMaterialObject(colored_geometry, materials);
-
-    const uncolored_geometry = setGeometry(uncolored_vertices);
-    const material = new THREE.MeshPhongMaterial({ color: 0xffffff, side: THREE.DoubleSide });
-    const origami2_uncolored = new THREE.Mesh(uncolored_geometry, material);
+    const uncolored_geometry = setGeometry(origami2_uncolored_vertices);
+    const origami2_uncolored = new THREE.Mesh(uncolored_geometry, phongMaterialDoubleWhite);
 
     const obj = new THREE.Group();
     obj.add(origami2_colored);
@@ -345,7 +269,7 @@ function createOrigami2(x, y, z) {
     obj.position.set(x, y, z);
     obj.rotateX(-Math.PI / 7);
     obj.castShadow = true;
-    obj.userData = { PhongMaterial: material, LambertMaterial: new THREE.MeshLambertMaterial() }
+    obj.userData = {PhongMaterial : [phongMaterialFront, phongMaterialBack, phongMaterialDoubleWhite] , LambertMaterial: [lambertMaterialFront, lambertMaterialBack, lambertMaterialDoubleWhite]}
 
     obj.receiveShadow = true;  // Shadows will show up on this object.
     scene.add(obj);
@@ -356,109 +280,28 @@ function createOrigami2(x, y, z) {
 function createOrigami3(x, y, z) {
     'use strict';
     // TODO: Model This
-    const colored_vertices = [
-        // 1 OK
-        { pos: [-0.1, 0, 0.1], norm: [0, 0, 1], uv: [0, 1 - 1 / 3], },
-        { pos: [-0.017, 1 / 6, 0], norm: [0, 0, 1], uv: [5 / 24, 1 - 5 / 24], },
-        { pos: [-0.27, 1 / 6, 0], norm: [0, 0, 1], uv: [0, 1], },
+    
 
-        // 3 OK
-        { pos: [0.03, 0.018, 0.101], norm: [0, 0, 1], uv: [0, 5 / 24], },
-        { pos: [0.24, 0.15, 0], norm: [0, 0, 1], uv: [1 / 3, 1 / 4], },
-        { pos: [-0.017, 1 / 6, 0], norm: [0, 0, 1], uv: [0, 5 / 12], },
+    const colored_geometry = setGeometry(origami3_colored_vertices);
+    const origami3_colored = createMultiMaterialObject(colored_geometry, phongMaterialFront, phongMaterialBack );
 
-        // 4 OK
-        { pos: [0.03, 0.018, 0.101], norm: [0, 0, 1], uv: [0, 5 / 24], },
-        { pos: [0.19, 0.04, 0.1], norm: [0, 0, 1], uv: [1 / 4, 1 / 8], },
-        { pos: [0.24, 0.15, 0], norm: [0, 0, 1], uv: [1 / 3, 1 / 4], },
+    const uncolored_geometry = setGeometry(origami3_uncolored_vertices);
+    const origami3_uncolored = new THREE.Mesh(uncolored_geometry, phongMaterialDoubleWhite);
 
-        // 7
-        { pos: [0.03, 0.39, 0.03], norm: [0, 0, 1], uv: [1 - 5 / 24, 1 / 24], },
-        { pos: [0.17, 0.4, 0], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0.06, 0.42, 0], norm: [0, 0, 1], uv: [1 - 5 / 24, 1 / 12], },
-
-        // 1 atras OK
-        { pos: [-0.1, 0, -0.1], norm: [0, 0, 1], uv: [1 / 3, 1], },
-        { pos: [-0.27, 1 / 6, 0], norm: [0, 0, 1], uv: [0, 1], },
-        { pos: [-0.017, 1 / 6, 0], norm: [0, 0, 1], uv: [5 / 24, 1 - 5 / 24], },
-
-        // 3 atras OK
-        { pos: [0.03, 0.018, -0.101], norm: [0, 0, 1], uv: [1 - 5 / 24, 1], },
-        { pos: [-0.017, 1 / 6, 0], norm: [0, 0, 1], uv: [1 - 5 / 12, 1], },
-        { pos: [0.24, 0.15, 0], norm: [0, 0, 1], uv: [3 / 4, 2 / 3], },
-
-        // 4 atras OK
-        { pos: [0.03, 0.018, -0.101], norm: [0, 0, 1], uv: [1 - 5 / 24, 1], },
-        { pos: [0.24, 0.15, 0], norm: [0, 0, 1], uv: [3 / 4, 2 / 3], },
-        { pos: [0.19, 0.04, -0.1], norm: [0, 0, 1], uv: [7 / 8, 3 / 4], },
-
-        // 7 atras
-        { pos: [0.03, 0.39, -0.03], norm: [0, 0, 1], uv: [1 - 5 / 24, 1 / 24], },
-        { pos: [0.06, 0.42, 0], norm: [0, 0, 1], uv: [11 / 12, 5 / 24], },
-        { pos: [0.17, 0.4, 0], norm: [0, 0, 1], uv: [1, 0], },
-
-    ];
-
-    const uncolored_vertices = [
-        // 2 - branco
-        { pos: [-0.1, 0, 0.1], norm: [0, 0, 1], uv: [0.5, 0.5], },
-        { pos: [0.03, 0.018, 0.1], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [-0.017, 1 / 6, 0.001], norm: [0, 0, 1], uv: [1, 0], },
-
-        // 2 atras - branco
-        { pos: [-0.1, 0, -0.1], norm: [0, 0, 1], uv: [0.5, 0.5], },
-        { pos: [0.03, 0.018, -0.1], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [-0.017, 1 / 6, 0.001], norm: [0, 0, 1], uv: [1, 0], },
-    ];
-
-    const doublesided_vertices = [
-        // 5 OK
-        { pos: [0.19, 0.04, 0.1], norm: [0, 0, 1], uv: [1 / 4, 1 / 8], },
-        { pos: [0.24, 0.15, 0], norm: [0, 0, 1], uv: [7 / 24, 0] },
-        { pos: [0.06, 0.42, 0], norm: [0, 0, 1], uv: [1 - 5 / 24, 0], },
-
-        // 6 OK
-        { pos: [0.19, 0.04, 0.1], norm: [0, 0, 1], uv: [1 / 4, 1 / 8], },
-        { pos: [0.06, 0.42, 0], norm: [0, 0, 1], uv: [1 - 5 / 24, 0], },
-        { pos: [0.03, 0.39, 0.03], norm: [0, 0, 1], uv: [1 - 5 / 24, 1 / 24], },
-
-        // 5 atras OK
-        { pos: [0.19, 0.04, -0.1], norm: [0, 0, 1], uv: [7 / 8, 3 / 4], },
-        { pos: [0.24, 0.15, 0], norm: [0, 0, 1], uv: [1, 1 - 7 / 24], },
-        { pos: [0.06, 0.42, 0], norm: [0, 0, 1], uv: [1, 5 / 24], },
-
-        // 6 atras OK
-        { pos: [0.19, 0.04, -0.1], norm: [0, 0, 1], uv: [7 / 8, 3 / 4], },
-        { pos: [0.06, 0.42, 0], norm: [0, 0, 1], uv: [1, 5 / 24], },
-        { pos: [0.03, 0.39, -0.03], norm: [0, 0, 1], uv: [23 / 24, 5 / 24], },
-    ];
-
-    const colored_geometry = setGeometry(colored_vertices);
-    const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
-    const materialFront = new THREE.MeshPhongMaterial({ side: THREE.FrontSide, map: texture });
-    const materialBack = new THREE.MeshPhongMaterial({ color: 0xffffff, side: THREE.BackSide });
-    const materials = [materialFront, materialBack];
-    const origami3_colored = new THREE.SceneUtils.createMultiMaterialObject(colored_geometry, materials);
-
-
-    const uncolored_geometry = setGeometry(uncolored_vertices);
-    const materialWhite = new THREE.MeshPhongMaterial({ color: 0xffffff, side: THREE.DoubleSide });
-    const origami3_uncolored = new THREE.Mesh(uncolored_geometry, materialWhite);
-
-    const doublesided_geometry = setGeometry(doublesided_vertices);
-    const materialDouble = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture });
-    const origami3_doublesided = new THREE.Mesh(doublesided_geometry, materialDouble);
-
+    const doublesided_geometry = setGeometry(origami3_double_colored_vertices);
+    const origami3_doublesided = new THREE.Mesh(doublesided_geometry, phongMaterialDoubleTexture);
 
     const obj = new THREE.Group();
+    
     obj.add(origami3_colored);
     obj.add(origami3_uncolored);
     obj.add(origami3_doublesided);
-
-
+    
+    
     obj.position.set(x, y, z);
     obj.castShadow = true;
     obj.receiveShadow = true;  // Shadows will show up on this object.
+    obj.userData = {PhongMaterial : [phongMaterialFront, phongMaterialBack, phongMaterialDoubleWhite, phongMaterialDoubleTexture] , LambertMaterial: [lambertMaterialFront, lambertMaterialBack, lambertMaterialDoubleWhite, lambertMaterialDoubleTexture]}
     scene.add(obj);
     return obj;
 
@@ -506,6 +349,8 @@ function setupLights() {
 function init() {
     'use strict';
     // Setting up renderer
+
+
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
@@ -556,7 +401,7 @@ function setupObjects() {
 
 function setupCameras() {
     'use strict';
-    cameras.push(createPerspectiveCamera(0, 3, 13, scene.position));
+    cameras.push(createPerspectiveCamera(0, 5, 13, scene.position));
     // TODO: maybe mudar os tamanhos de todos os objetos para se ver alguma coisa com a camera ortogonal
     cameras.push(createOrthoCamera(0, 3, 15, scene.position));
     camera = cameras[0];
@@ -608,7 +453,7 @@ function updateDisplayType() {
 }
 
 function toggleAllMeshesMaterial() {
-    const objects = [origami1, origami2, origami3, podium, plane, spotlightobj1, spotlightobj2, spotlightobj3];
+    const objects = [/*origami1, origami2, origami3, */podium, plane, spotlightobj1, spotlightobj2, spotlightobj3];
 
     function toggleObject3DMaterial(object3D) {
         object3D.children.forEach((obj) => {
@@ -647,6 +492,31 @@ function toggleAnimations() {
         clock.start();
     }
     animations_enabled = !animations_enabled;
+}
+
+function toggleMaterial() {
+    
+    const objects = [origami1, origami2, origami3, plane, podium, spotlightobj1, spotlightobj2, spotlightobj3];
+    objects.forEach((object) => {
+        if (object instanceof THREE.Mesh) {
+            if (object.material instanceof THREE.MeshPhongMaterial) {
+                object.material = object.userData.LambertMaterial;
+            }
+            else if (object.material instanceof THREE.MeshLambertMaterial){
+                object.material = object.userData.PhongMaterial;
+            }
+        }
+        else {
+            object.children.forEach((o) => {
+                if (o.material instanceof THREE.MeshPhongMaterial) {
+                    o.material = o.userData.LambertMaterial;
+                }
+                else {
+                    o.material = o.userData.PhongMaterial;
+                }
+            });
+        }
+    });
 }
 
 function updateCameras() {
@@ -772,4 +642,20 @@ function onKeyUp(e) {
         origami3_controller[e.keyCode].pressed = false;
         return;
     }
+}
+
+function createMultiMaterialObject(geometry, frontMaterial, backMaterial) {
+
+    var group = new THREE.Group();
+
+    var meshFront = new THREE.Mesh( geometry, frontMaterial);
+    meshFront.userData = {PhongMaterial : frontMaterial, LambertMaterial: lambertMaterialFront}
+    group.add(meshFront);
+
+    var meshBack = new THREE.Mesh( geometry, backMaterial);
+    meshBack.userData = {PhongMaterial : backMaterial, LambertMaterial: lambertMaterialBack}
+    group.add(meshBack);
+
+    return group;
+
 }
