@@ -415,7 +415,9 @@ function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
+    renderer.xr.enabled = true;
     document.body.appendChild(renderer.domElement);
+    document.body.appendChild(VRButton.createButton(renderer));
 
     // Objects, Lights and Cameras
     setupObjects();
@@ -435,7 +437,7 @@ function render() {
 
 function animate() {
     'use strict';
-    requestAnimationFrame(animate);
+    renderer.setAnimationLoop(animate);
     updatePositions();
     render();
 }
