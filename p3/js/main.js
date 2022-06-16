@@ -110,7 +110,11 @@ function createFloor() {
     var default_material = new THREE.MeshPhongMaterial({ map: albedo, aoMap: aoMap, specularMap: specularMap });
     var geometry = new THREE.PlaneGeometry(plane_size, plane_size, plane_segments, plane_segments);
     var mesh = new THREE.Mesh(geometry, default_material);
-    mesh.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: albedo, aoMap: aoMap, specularMap: specularMap }) }
+    mesh.userData = {
+        PhongMaterial: default_material,
+        LambertMaterial: new THREE.MeshLambertMaterial({ map: albedo, aoMap: aoMap, specularMap: specularMap }),
+        BasicMaterial: new THREE.MeshBasicMaterial({ map: albedo, aoMap: aoMap, specularMap: specularMap })
+    }
     mesh.rotation.x = - Math.PI / 2;
     mesh.receiveShadow = true;
 
@@ -146,8 +150,16 @@ function createPodium(x, y, z) {
     const mesh2 = new THREE.Mesh(geometry2, default_material);
     mesh2.position.set(x, y + 2, z - 2.5);
 
-    mesh1.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: albedo, aoMap: aoMap }) }
-    mesh2.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: albedo, aoMap: aoMap }) }
+    mesh1.userData = {
+        PhongMaterial: default_material,
+        LambertMaterial: new THREE.MeshLambertMaterial({ map: albedo, aoMap: aoMap }),
+        BasicMaterial: new THREE.MeshBasicMaterial({ map: albedo, aoMap: aoMap })
+    }
+    mesh2.userData = {
+        PhongMaterial: default_material,
+        LambertMaterial: new THREE.MeshLambertMaterial({ map: albedo, aoMap: aoMap }),
+        BasicMaterial: new THREE.MeshBasicMaterial({ map: albedo, aoMap: aoMap })
+    }
 
     mesh1.receiveShadow = true;
     mesh2.receiveShadow = true;
@@ -169,19 +181,31 @@ function createLightsSupport(x, y, z) {
     const vertical_cylinder_geometry = new THREE.CylinderGeometry(0.05, 0.05, 8.5, 32);
 
     const vertical_cylinder1 = new THREE.Mesh(vertical_cylinder_geometry, default_material);
-    vertical_cylinder1.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }) }
+    vertical_cylinder1.userData = {
+        PhongMaterial: default_material,
+        LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }),
+        BasicMaterial: new THREE.MeshLambertMaterial({ map: texture })
+    }
     vertical_cylinder1.position.set(x, y, z);
     vertical_cylinder1.position.x -= 6;
 
     const vertical_cylinder2 = new THREE.Mesh(vertical_cylinder_geometry, default_material);
-    vertical_cylinder2.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }) }
+    vertical_cylinder2.userData = {
+        PhongMaterial: default_material,
+        LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }),
+        BasicMaterial: new THREE.MeshBasicMaterial({ map: texture })
+    }
     vertical_cylinder2.position.set(x, y, z);
     vertical_cylinder2.position.x += 6;
 
     const horizontal_cylinder_geometry = new THREE.CylinderGeometry(0.05, 0.05, 12.5, 32);
 
     const horizontal_cylinder = new THREE.Mesh(horizontal_cylinder_geometry, default_material);
-    horizontal_cylinder.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }) }
+    horizontal_cylinder.userData = {
+        PhongMaterial: default_material,
+        LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }),
+        BasicMaterial: new THREE.MeshBasicMaterial({ map: texture })
+    }
     horizontal_cylinder.rotateZ(- Math.PI / 2);
     horizontal_cylinder.position.set(x, y, z);
     horizontal_cylinder.position.y += 4.25;
@@ -210,8 +234,16 @@ function createSpotLightObject(x, y, z) {
     const sphere = new THREE.Mesh(sphere_geometry, material);
     sphere.position.set(0, - cone_height / 2, 0);
     const cone = new THREE.Mesh(cone_geometry, default_material_cone);
-    sphere.userData = { PhongMaterial: new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial() }
-    cone.userData = { PhongMaterial: default_material_cone, LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }) }
+    sphere.userData = {
+        PhongMaterial: new THREE.MeshPhongMaterial(),
+        LambertMaterial: new THREE.MeshLambertMaterial(),
+        BasicMaterial: new THREE.MeshBasicMaterial()
+    }
+    cone.userData = {
+        PhongMaterial: default_material_cone,
+        LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }),
+        BasicMaterial: new THREE.MeshBasicMaterial({ map: texture })
+    }
 
     const obj = new THREE.Object3D();
     obj.add(sphere);
@@ -245,7 +277,11 @@ function createOrigami2(x, y, z) {
 
     const uncolored_geometry = setGeometry(origami2_uncolored_vertices);
     const origami2_uncolored = new THREE.Mesh(uncolored_geometry, phongMaterialDoubleWhite);
-    origami2_uncolored.userData = { PhongMaterial: phongMaterialDoubleWhite, LambertMaterial: lambertMaterialDoubleWhite, BasicMaterial: basicMaterialDoubleWhite }
+    origami2_uncolored.userData = {
+        PhongMaterial: phongMaterialDoubleWhite,
+        LambertMaterial: lambertMaterialDoubleWhite,
+        BasicMaterial: basicMaterialDoubleWhite
+    }
 
     const obj = new THREE.Group();
     obj.add(origami2_colored); // grupo -> meshes já tês user data
@@ -267,11 +303,19 @@ function createOrigami3(x, y, z) {
 
     const uncolored_geometry = setGeometry(origami3_uncolored_vertices);
     const origami3_uncolored = new THREE.Mesh(uncolored_geometry, phongMaterialDoubleWhite);
-    origami3_uncolored.userData = { PhongMaterial: phongMaterialDoubleWhite, LambertMaterial: lambertMaterialDoubleWhite, BasicMaterial: basicMaterialDoubleWhite }
+    origami3_uncolored.userData = {
+        PhongMaterial: phongMaterialDoubleWhite,
+        LambertMaterial: lambertMaterialDoubleWhite,
+        BasicMaterial: basicMaterialDoubleWhite
+    }
 
     const doublesided_geometry = setGeometry(origami3_double_colored_vertices);
     const origami3_doublesided = new THREE.Mesh(doublesided_geometry, phongMaterialDoubleTexture);
-    origami3_doublesided.userData = { PhongMaterial: phongMaterialDoubleTexture, LambertMaterial: lambertMaterialDoubleTexture, BasicMaterial: basicMaterialDoubleTexture }
+    origami3_doublesided.userData = {
+        PhongMaterial: phongMaterialDoubleTexture,
+        LambertMaterial: lambertMaterialDoubleTexture,
+        BasicMaterial: basicMaterialDoubleTexture
+    }
 
 
     const obj = new THREE.Group();
@@ -465,6 +509,36 @@ function toggleAllMeshesMaterial() {
     });
 }
 
+function toggleIlluminationCalculations() {
+    const objects = [origami1, origami2, origami3, podium, plane, spotlightobj1, spotlightobj2, spotlightobj3];
+
+    function toggleObject3DIlluminationCalculations(object3D) {
+        object3D.children.forEach((obj) => {
+            if (obj instanceof THREE.Mesh) {
+                if (obj.material instanceof THREE.MeshBasicMaterial) {
+                    obj.material = obj.userData.PhongMaterial;
+                } else {
+                    obj.material = obj.userData.BasicMaterial;
+                }
+            } else {
+                toggleObject3DIlluminationCalculations(obj);
+            }
+        });
+    }
+
+    objects.forEach((obj) => {
+        if (obj instanceof THREE.Mesh) {
+            if (obj.material instanceof THREE.MeshBasicMaterial) {
+                obj.material = obj.userData.PhongMaterial;
+            } else {
+                obj.material = obj.userData.BasicMaterial;
+            }
+        } else {
+            toggleObject3DIlluminationCalculations(obj);
+        }
+    });
+}
+
 // TODO: É possivel deslocar os objetos de sitio se carregarmos no pause em comprimentos de onda certos
 function toggleAnimations() {
     if (animations_enabled) {
@@ -541,8 +615,9 @@ function onKeyDown(e) {
             toggleAllMeshesMaterial();
             break;
         // TODO: Toggle Illumnation Calculations
-        // case 83: // S
-        //     break;
+        case 83: // S
+            toggleIlluminationCalculations();
+            break;
         // Toggle Directional Light
         case 68: // D
             directional_light.intensity = directional_light.intensity == 0 ? directional_light_intensity : 0;
