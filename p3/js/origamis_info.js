@@ -13,6 +13,13 @@ const lambertMaterials = [lambertMaterialFront, lambertMaterialBack];
 const lambertMaterialDoubleWhite = new THREE.MeshLambertMaterial({color : 0xffffff, side : THREE.DoubleSide});
 const lambertMaterialDoubleTexture = new THREE.MeshLambertMaterial({side : THREE.DoubleSide, map: texture});
 
+const basicMaterialFront = new THREE.MeshBasicMaterial({side : THREE.FrontSide, map: texture});
+const basicMaterialBack = new THREE.MeshBasicMaterial({color : 0xffffff, side : THREE.BackSide});
+const basicMaterials = [basicMaterialFront, basicMaterialBack];
+
+const basicMaterialDoubleWhite = new THREE.MeshBasicMaterial({color : 0xffffff, side : THREE.DoubleSide});
+const basicMaterialDoubleTexture = new THREE.MeshBasicMaterial({side : THREE.DoubleSide, map: texture});
+
 const origami1_vertices = [
     // front
     { pos: [0, -0.5,  0], uv: [1, 0], },
