@@ -140,7 +140,7 @@ function createInfoPlane(camera) {
     if (camera instanceof THREE.PerspectiveCamera) {
         geometry = new THREE.PlaneGeometry(10, 10, 10, 10);
     } else {
-        geometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight, 10, 10);
+        geometry = new THREE.PlaneGeometry(100, 100, 10, 10);
     }
     const mesh = new THREE.Mesh(geometry, material);
     mesh.quaternion.copy(camera.quaternion);
@@ -153,7 +153,7 @@ function createInfoPlane(camera) {
 function createPodium(x, y, z) {
     'use strict';
     const podium_length = 10;
-    const podium_height = 2;
+    const podium_height = 1;
     const podium_width = 10;
 
     // Geometry
@@ -175,8 +175,12 @@ function createPodium(x, y, z) {
     // Mesh
     const mesh1 = new THREE.Mesh(geometry1, default_material);
     mesh1.position.set(x, y, z);
+    mesh1.position.y += podium_height / 2;
+
     const mesh2 = new THREE.Mesh(geometry2, default_material);
-    mesh2.position.set(x, y + 2, z - 2.5);
+    mesh2.position.set(x, y, z);
+    mesh2.position.y += 3 / 2 * podium_height;
+    mesh2.position.z -= podium_width / 4;
 
     mesh1.userData = {
         PhongMaterial: default_material,
@@ -206,7 +210,9 @@ function createLightsSupport(x, y, z) {
     texture.encoding = THREE.sRGBEncoding;
     const default_material = new THREE.MeshPhongMaterial({ map: texture });
 
-    const vertical_cylinder_geometry = new THREE.CylinderGeometry(0.05, 0.05, 8.5, 32);
+    const vertical_height = 4.25;
+
+    const vertical_cylinder_geometry = new THREE.CylinderGeometry(0.05, 0.05, vertical_height, 32);
 
     const vertical_cylinder1 = new THREE.Mesh(vertical_cylinder_geometry, default_material);
     vertical_cylinder1.userData = {
@@ -216,6 +222,7 @@ function createLightsSupport(x, y, z) {
     }
     vertical_cylinder1.position.set(x, y, z);
     vertical_cylinder1.position.x -= 6;
+    vertical_cylinder1.position.y += vertical_height / 2;
 
     const vertical_cylinder2 = new THREE.Mesh(vertical_cylinder_geometry, default_material);
     vertical_cylinder2.userData = {
@@ -225,6 +232,7 @@ function createLightsSupport(x, y, z) {
     }
     vertical_cylinder2.position.set(x, y, z);
     vertical_cylinder2.position.x += 6;
+    vertical_cylinder2.position.y += vertical_height / 2;
 
     const horizontal_cylinder_geometry = new THREE.CylinderGeometry(0.05, 0.05, 12.5, 32);
 
@@ -458,7 +466,7 @@ function setupCameras() {
     infoplane1 = createInfoPlane(cameras[0]);
     infoplane1.visible = false;
     // TODO: maybe mudar os tamanhos de todos os objetos para se ver alguma coisa com a camera ortogonal
-    cameras.push(createOrthoCamera(0, 3, 15, scene.position));
+    cameras.push(createOrthoCamera(0, 0, 15, scene.position));
     infoplane2 = createInfoPlane(cameras[1]);
     infoplane2.visible = false;
     camera = cameras[0];
@@ -575,8 +583,11 @@ function toggleIlluminationCalculations() {
 function toggleAnimations() {
     if (animations_enabled) {
         clock.stop(); older_time_offset += clock.getElapsedTime() % (Math.PI * 2);
-        infoplane1.visible = true;
-        infoplane2.visible = true;
+        if (camera instanceof THREE.PerspectiveCamera) {
+            infoplane1.visible = true;
+        } else {
+            infoplane2.visible = true;
+        }
     } else {
         clock.start();
         infoplane1.visible = false;
@@ -608,6 +619,8 @@ function createOrthoCamera(x, y, z, target) {
     var cam = new THREE.OrthographicCamera(window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000);
     cam.position.set(x, y, z);
     cam.lookAt(target);
+    cam.zoom = 100;
+    cam.updateProjectionMatrix();
     scene.add(cam);
     return cam;
 }
@@ -672,9 +685,17 @@ function onKeyDown(e) {
 
         // Cameras Toggle
         case 49:
+            if (!animations_enabled) {
+                infoplane1.visible = true;
+                infoplane2.visible = false;
+            }
             camera = cameras[0];
             break;
         case 50:
+            if (!animations_enabled) {
+                infoplane2.visible = true;
+                infoplane1.visible = false;
+            }
             camera = cameras[1];
             break;
 
