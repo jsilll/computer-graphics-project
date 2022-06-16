@@ -503,11 +503,11 @@ function updatePositions() {
 
 function resetPositions() {
     origami1.position.set(-3, 2, 2.5);
-    origami1.rotateY(0);
+    origami1.rotation.y = 0;
     origami2.position.set(0, 2, 2.5);
-    origami2.rotateY(0);
+    origami2.rotation.y = 0;
     origami3.position.set(3, 2, 2.5);
-    origami3.rotateY(0);
+    origami3.rotation.y = 0;
 }
 
 function updateDisplayType() {

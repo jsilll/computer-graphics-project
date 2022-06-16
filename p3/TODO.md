@@ -34,7 +34,7 @@
 
 ## Tarefa 7
 - [ ] Pausar a visualização quando o utilizador pressiona a 'space' e retomar ao pressionar o space outra vez. (TODO: neste momento isto tem um problema)
-- [ ] Mostrar uma mensagem no ecrã que deverá ser sempre legível, independentemente da posição da câmera e das dimensões do viewport (deve-se recorrer a uma segunda projecao ortogonal e um segundo viewport, esta projecao é independente da camera ativa).
+- [x] Mostrar uma mensagem no ecrã que deverá ser sempre legível, independentemente da posição da câmera e das dimensões do viewport (deve-se recorrer a uma segunda projecao ortogonal e um segundo viewport, esta projecao é independente da camera ativa).
 - [x] Fazer o refresh da cena usando a tecla '3' 
 - [x] Eventos de Redimensionamento da janela
 - [x] reiniciar a cena sem ser necessário recarregar a aplicação
