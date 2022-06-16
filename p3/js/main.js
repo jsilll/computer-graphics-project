@@ -4,43 +4,38 @@ const clock = new THREE.Clock();
 var camera, scene, renderer;
 var cameras = new Array();
 
-//  ---------------- Info Message ---------------- //
-
-const info_msg = document.getElementById("info");
-
-function updateInfoMsg(msg) {
-    info_msg.innerText = msg;
-}
-
 //  ---------------- Object Variables ---------------- //
+
+var podium;
+var plane;
 
 var origami1;
 var origami2;
 var origami3;
 
-var podium;
-var plane;
 var spotlightobj1;
 var spotlightobj2;
 var spotlightobj3;
 
 //  ---------------- Light Variables ---------------- //
 
-const spotlights_color = 0x404040;
-const spotlights_intensity = 4;
-const spotlights_spread_angle = Math.PI / 12;
 const spotlights_height = 4;
+const spotlights_intensity = 2;
+const spotlights_color = 0x404040;
+const spotlights_spread_angle = Math.PI / 12;
+
 var spotlight1;
 var spotlight2;
 var spotlight3;
 
-const directional_light_color = 0x404040;
 const directional_light_intensity = 2;
+const directional_light_color = 0x404040;
+
 var directional_light;
 
 //  ---------------- Animation Variables ---------------- //
 
-animation_enabled = true;
+var animations_enabled = true;
 
 //  ---------------- Controllers ---------------- //
 
@@ -61,6 +56,10 @@ const origami3_controller = {
     89: { pressed: false, rotate: (obj, delta) => (obj.rotateY(rotation_speed * delta)) }, // y
 }
 
+//  ---------------- Animation Variables ---------------- //
+
+older_time_offset = 0;
+
 //  ---------------- Object creation ------------------- //
 
 function setGeometry(vertices) {
@@ -77,62 +76,84 @@ function setGeometry(vertices) {
     const positionNumComponents = 3;
     const normalNumComponents = 3;
     const uvNumComponents = 2;
-    geometry.addAttribute(
+    geometry.setAttribute(
         'position',
         new THREE.BufferAttribute(new Float32Array(positions), positionNumComponents));
-    geometry.addAttribute(
+    geometry.setAttribute(
         'normal',
         new THREE.BufferAttribute(new Float32Array(normals), normalNumComponents));
-    geometry.addAttribute(
+    geometry.setAttribute(
         'uv',
         new THREE.BufferAttribute(new Float32Array(uvs), uvNumComponents));
 
     return geometry;
-
 }
 
-function createPlane() {
+function createFloor() {
     'use strict';
     const plane_size = 1000;
     const plane_segments = 10;
     const plane_color = 0x777777;
-    var material = new THREE.MeshPhongMaterial({ color: plane_color });
+
+    var albedo = new THREE.TextureLoader().load('textures/floor_albedo.jpg');
+    albedo.wrapS = albedo.wrapT = THREE.RepeatWrapping;
+    albedo.repeat.set(256, 256);
+    albedo.anisotropy = 16;
+    albedo.encoding = THREE.sRGBEncoding;
+
+    var aoMap = new THREE.TextureLoader().load('textures/floor_ao.jpg');
+    aoMap.wrapS = aoMap.wrapT = THREE.RepeatWrapping;
+    aoMap.repeat.set(256, 256);
+    aoMap.anisotropy = 16;
+    aoMap.encoding = THREE.sRGBEncoding;
+
+    var specularMap = new THREE.TextureLoader().load('textures/floor_specular.jpg');
+    specularMap.wrapS = specularMap.wrapT = THREE.RepeatWrapping;
+    specularMap.repeat.set(256, 256);
+    specularMap.anisotropy = 16;
+    specularMap.encoding = THREE.sRGBEncoding;
+
+    var default_material = new THREE.MeshPhongMaterial({ map: albedo, aoMap: aoMap, specularMap: specularMap });
     var geometry = new THREE.PlaneGeometry(plane_size, plane_size, plane_segments, plane_segments);
-    var mesh = new THREE.Mesh(geometry, material);
-    mesh.userData = {PhongMaterial : new THREE.MeshPhongMaterial({ color: plane_color }), LambertMaterial: new THREE.MeshLambertMaterial({ color: plane_color })}
+    var mesh = new THREE.Mesh(geometry, default_material);
+    mesh.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: albedo, aoMap: aoMap, specularMap: specularMap }) }
     mesh.rotation.x = - Math.PI / 2;
     mesh.receiveShadow = true;
+
     scene.add(mesh);
     return mesh;
 }
 
 function createPodium(x, y, z) {
     'use strict';
-    const podium_length = 5;
+    const podium_length = 10;
     const podium_height = 2;
-    const podium_width = 5;
+    const podium_width = 10;
 
     // Geometry
     var geometry1 = new THREE.BoxGeometry(podium_length, podium_height, podium_width);
     var geometry2 = new THREE.BoxGeometry(podium_length, podium_height, podium_width / 2);
 
     // Material
-    const material = new THREE.MeshPhongMaterial();
-    // material.map = new THREE.TextureLoader().load('textures/mars_texture.jpg');
-    // material.bumpMap = new THREE.TextureLoader().load('textures/mars_bump.png');
-    // material.displacementMap = new THREE.TextureLoader().load('textures/mars_displacement.jpg');
+    var albedo = new THREE.TextureLoader().load('textures/wood_albedo.jpg');
+    albedo.anisotropy = 16;
+    albedo.encoding = THREE.sRGBEncoding;
+    var aoMap = new THREE.TextureLoader().load('textures/wood_ao.jpg');
+    aoMap.anisotropy = 16;
+    aoMap.encoding = THREE.sRGBEncoding;
     // TODO:
-    material.displacementScale = 25;
-    material.bumpScale = 10;
+    const default_material = new THREE.MeshPhongMaterial({ map: albedo, aoMap: aoMap });
+    default_material.displacementScale = 25;
+    default_material.bumpScale = 10;
 
     // Mesh
-    const mesh1 = new THREE.Mesh(geometry1, material);
+    const mesh1 = new THREE.Mesh(geometry1, default_material);
     mesh1.position.set(x, y, z);
-    const mesh2 = new THREE.Mesh(geometry2, material);
+    const mesh2 = new THREE.Mesh(geometry2, default_material);
     mesh2.position.set(x, y + 2, z);
 
-    mesh1.userData = {PhongMaterial : new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial()}
-    mesh2.userData = {PhongMaterial : new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial()}
+    mesh1.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: albedo, aoMap: aoMap }) }
+    mesh2.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: albedo, aoMap: aoMap }) }
 
     mesh1.receiveShadow = true;
     mesh2.receiveShadow = true;
@@ -144,6 +165,46 @@ function createPodium(x, y, z) {
     return mesh;
 }
 
+function createLightsSupport(x, y, z) {
+    // radiusTop : Float, 
+    // radiusBottom: Float,
+    // height : Float,
+    // radialSegments : Integer
+
+    const texture = new THREE.TextureLoader().load('textures/metal_texture.jpg');
+    texture.anisotropy = 16;
+    texture.encoding = THREE.sRGBEncoding;
+    const default_material = new THREE.MeshPhongMaterial({ map: texture });
+
+    const vertical_cylinder_geometry = new THREE.CylinderGeometry(0.05, 0.05, 8.5, 32);
+
+    const vertical_cylinder1 = new THREE.Mesh(vertical_cylinder_geometry, default_material);
+    vertical_cylinder1.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }) }
+    const vertical_cylinder2 = new THREE.Mesh(vertical_cylinder_geometry, default_material);
+    vertical_cylinder2.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }) }
+
+    vertical_cylinder1.position.set(x, y, z);
+    vertical_cylinder1.position.x -= 6;
+
+    vertical_cylinder2.position.set(x, y, z);
+    vertical_cylinder2.position.x += 6;
+
+    const horizontal_cylinder_geometry = new THREE.CylinderGeometry(0.05, 0.05, 12.5, 32);
+    const horizontal_cylinder = new THREE.Mesh(horizontal_cylinder_geometry, default_material);
+    horizontal_cylinder.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }) }
+
+    horizontal_cylinder.rotateZ(- Math.PI / 2);
+    horizontal_cylinder.position.set(x, y, z);
+    horizontal_cylinder.position.y += 4.25;
+
+
+
+    scene.add(vertical_cylinder1);
+    scene.add(vertical_cylinder2);
+    scene.add(horizontal_cylinder);
+    return vertical_cylinder1;
+}
+
 function createSpotLightObject(x, y, z) {
     const sphere_radius = 0.25;
     const sphere_geometry = new THREE.SphereGeometry(sphere_radius, 8, 8);
@@ -153,11 +214,16 @@ function createSpotLightObject(x, y, z) {
     const cone_geometry = new THREE.CylinderGeometry(cone_top_radius, cone_bottom_radius, cone_height, 32);
 
     const material = new THREE.MeshPhongMaterial();
+    const texture = new THREE.TextureLoader().load('textures/metal_texture.jpg');
+    texture.anisotropy = 16;
+    texture.encoding = THREE.sRGBEncoding;
+    const default_material_cone = new THREE.MeshPhongMaterial({ map: texture });
+
     const sphere = new THREE.Mesh(sphere_geometry, material);
     sphere.position.set(0, - cone_height / 2, 0);
-    const cone = new THREE.Mesh(cone_geometry, material);
-    sphere.userData = {PhongMaterial : new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial()}
-    cone.userData = {PhongMaterial : new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial()}
+    const cone = new THREE.Mesh(cone_geometry, default_material_cone);
+    sphere.userData = { PhongMaterial: new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial() }
+    cone.userData = { PhongMaterial: default_material_cone, LambertMaterial: new THREE.MeshLambertMaterial({ map: texture }) }
 
     const obj = new THREE.Object3D();
     obj.add(sphere);
@@ -165,7 +231,6 @@ function createSpotLightObject(x, y, z) {
     obj.position.set(x, y, z);
 
     scene.add(obj);
-
     return obj;
 }
 
@@ -181,21 +246,21 @@ function createOrigami1(x, y, z) {
         { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
         { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
         { pos: [-0.5, 0, 0.2], norm: [0, 0, 1], uv: [1, 0], },
-
     ];
 
     const geometry = setGeometry(vertices);
 
     // TODO: posso usar double side ou cada lado é uma outra face? e se sim como as ponho de "costas" uma para a outra
     const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
+    texture.anisotropy = 16;
+    texture.encoding = THREE.sRGBEncoding;
     const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture });
-
 
     origami1 = new THREE.Mesh(geometry, material);
     origami1.position.set(x, y, z);
     origami1.rotateX(Math.PI / 4);
     origami1.castShadow = true;
-    origami1.userData = {PhongMaterial : new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial()}
+    origami1.userData = { PhongMaterial: new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, map: texture }) }
 
     scene.add(origami1);
 
@@ -251,16 +316,18 @@ function createOrigami2(x, y, z) {
 
     // TODO: posso usar double side ou cada lado é uma outra face? e se sim como as ponho de "costas" uma para a outra
     const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
+    texture.anisotropy = 16;
+    texture.encoding = THREE.sRGBEncoding;
     const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture });
     origami2 = new THREE.Mesh(geometry, material);
     origami2.position.set(x, y, z);
     origami2.castShadow = true;
-    origami2.userData = {PhongMaterial : material, LambertMaterial: new THREE.MeshLambertMaterial()}
+    origami2.userData = { PhongMaterial: material, LambertMaterial: new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, map: texture }) }
 
     scene.add(origami2);
     return origami2;
-
 }
+
 function createOrigami3(x, y, z) {
     'use strict';
     // TODO: Model This
@@ -344,23 +411,22 @@ function createOrigami3(x, y, z) {
         { pos: [0.29, 0.04, -0.1], norm: [0, 0, 1], uv: [1, 1], },
         { pos: [0.34, 0.15, 0], norm: [0, 0, 1], uv: [1, 1], },
         { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
-
-
     ];
 
     const geometry = setGeometry(vertices);
 
     // TODO: posso usar double side ou cada lado é uma outra face? e se sim como as ponho de "costas" uma para a outra
     const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
-    const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture });
-    origami3 = new THREE.Mesh(geometry, material);
+    texture.anisotropy = 16;
+    texture.encoding = THREE.sRGBEncoding;
+    const default_material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture });
+    origami3 = new THREE.Mesh(geometry, default_material);
     origami3.position.set(x, y, z);
     origami3.castShadow = true;
-    origami3.userData = {PhongMaterial : new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial()}
+    origami3.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, map: texture }) }
 
     scene.add(origami3);
     return origami3;
-
 }
 
 //  ---------------- Lights Creation ---------------- //
@@ -395,6 +461,9 @@ function setupLights() {
     spotlight3.castShadow = true;
     spotlight3.target = origami3;
     scene.add(spotlight3);
+
+    // Ambient Light
+    scene.add(new THREE.AmbientLight(0x404040, 3));
 }
 
 //  ---------------- Three.js Functions ---------------- //
@@ -435,23 +504,25 @@ function setupObjects() {
     'use strict';
     scene = new THREE.Scene();
     // Adding Axis to the Scene
-    scene.add(new THREE.AxisHelper(50));
-    // Creating objects
-    plane = createPlane();
+    // scene.add(new THREE.AxesHelper(50));
+    // Creating objects and setting assigning global variables
+    plane = createFloor();
     podium = createPodium(0, 0, 0);
-    origami1 = createOrigami1(-2, 2, 2)
-    origami2 = createOrigami2(0, 2, 2);
-    origami3 = createOrigami3(2, 2, 2);
-    spotlightobj1 = createSpotLightObject(-2, spotlights_height, 2);
-    spotlightobj2 = createSpotLightObject(0, spotlights_height, 2);
-    spotlightobj3 = createSpotLightObject(2, spotlights_height, 2);
+    origami1 = createOrigami1(-3, 2, 3.5)
+    origami2 = createOrigami2(0, 2, 3.5);
+    origami3 = createOrigami3(3, 2, 3.5);
+    createLightsSupport(0, 0, 3.5);
+    spotlightobj1 = createSpotLightObject(-3, spotlights_height, 3.5);
+    spotlightobj2 = createSpotLightObject(0, spotlights_height, 3.5);
+    spotlightobj3 = createSpotLightObject(3, spotlights_height, 3.5);
 
 }
 
 function setupCameras() {
     'use strict';
-    cameras.push(createPerspectiveCamera(0, 3, 15, scene.position));
-    cameras.push(createOrthoCamera(0, 3.5, 15, scene.position));
+    cameras.push(createPerspectiveCamera(0, 3, 13, scene.position));
+    // TODO: maybe mudar os tamanhos de todos os objetos para se ver alguma coisa com a camera ortogonal
+    cameras.push(createOrthoCamera(0, 3, 15, scene.position));
     camera = cameras[0];
 }
 
@@ -459,7 +530,7 @@ function setupCameras() {
 
 function updatePositions() {
     'use strict';
-    if (animation_enabled) {
+    if (animations_enabled) {
         const delta = clock.getDelta();
         Object.keys(origami1_controller).forEach((key) => {
             if (origami1_controller[key].pressed) {
@@ -478,9 +549,9 @@ function updatePositions() {
         });
 
         const time = clock.getElapsedTime();
-        origami1.position.y = origami1.position.y + Math.sin(time) * 0.0025;
-        origami2.position.y = origami2.position.y + Math.sin(time) * 0.0025;
-        origami3.position.y = origami3.position.y + Math.sin(time) * 0.0025;
+        origami1.position.y = origami1.position.y + Math.sin(time + older_time_offset) * 0.0025;
+        origami2.position.y = origami2.position.y + Math.sin(time + older_time_offset) * 0.0025;
+        origami3.position.y = origami3.position.y + Math.sin(time + older_time_offset) * 0.0025;
     }
 }
 
@@ -496,40 +567,58 @@ function resetPositions() {
 function updateDisplayType() {
     'use strict';
     scene.traverse((node) => {
-        if (node instanceof THREE.Mesh) {
-            node.material.wireframe = !node.material.wireframe;
+        if (node instanceof THREE.Mesh) { node.material.wireframe = !node.material.wireframe; }
+    });
+}
+
+function toggleAllMeshesMaterial() {
+    const objects = [origami1, origami2, origami3, podium, plane, spotlightobj1, spotlightobj2, spotlightobj3];
+
+    function toggleObject3DMaterial(object3D) {
+        object3D.children.forEach((obj) => {
+            if (obj instanceof THREE.Mesh) {
+                if (obj.material instanceof THREE.MeshPhongMaterial) {
+                    obj.material = obj.userData.LambertMaterial;
+                }
+                else {
+                    obj.material = obj.userData.PhongMaterial;
+                }
+            } else {
+                toggleObject3DMaterial(obj);
+            }
+        });
+    }
+
+    objects.forEach((obj) => {
+        if (obj instanceof THREE.Mesh) {
+            if (obj.material instanceof THREE.MeshPhongMaterial) {
+                obj.material = obj.userData.LambertMaterial;
+            }
+            else {
+                obj.material = obj.userData.PhongMaterial;
+            }
+        } else {
+            toggleObject3DMaterial(obj);
         }
     });
 }
 
-function toggleMaterial() {
-    const objects = [origami1, origami2, origami3, podium, plane, spotlightobj1, spotlightobj2, spotlightobj3];
-    objects.forEach((object) => {
-       if (object.material instanceof THREE.MeshPhongMaterial) {
-           object.material = object.userData.LambertMaterial;
-       }
-       else if (object.material instanceof THREE.MeshLambertMaterial){
-           object.material = object.userData.PhongMaterial;
-       }
-       else {
-           object.children.forEach((o) => {
-               if (o.material instanceof THREE.MeshPhongMaterial) {
-                   o.material = o.userData.LambertMaterial;
-               }
-               else {
-                   o.material = o.userData.PhongMaterial;
-               }
-           });
-       }
-    });
+// TODO: É possivel deslocar os objetos de sitio se carregarmos no pause em comprimentos de onda certos
+function toggleAnimations() {
+    if (animations_enabled) {
+        clock.stop(); older_time_offset += clock.getElapsedTime() % (Math.PI * 2);
+    } else {
+        clock.start();
+    }
+    animations_enabled = !animations_enabled;
 }
 
 function updateCameras() {
     'use strict';
     cameras.forEach((c) => {
-        if (c.isPerspectiveCamera || c instanceof THREE.PerspectiveCamera) {
+        if (c.isPerspectiveCamera) {
             c.aspect = window.innerWidth / window.innerHeight;
-        } else if (c.isOrthographicCamera || c instanceof THREE.OrthographicCamera) {
+        } else if (c.isOrthographicCamera) {
             c.left = window.innerWidth / - 2
             c.right = window.innerWidth / 2
             c.top = window.innerHeight / 2
@@ -589,12 +678,11 @@ function onKeyDown(e) {
 
         // TODO: Toggle Shading Type
         case 65: // A
-            toggleMaterial();
+            toggleAllMeshesMaterial();
             break;
         // TODO: Toggle Illumnation Calculations & Animations
         case 83: // S
-            animation_enabled = !animation_enabled;
-            if (animation_enabled) { clock.start(); supdateInfoMsg(""); } else { clock.pause(); updateInfoMsg("Paused"); }
+            toggleAnimations();
             break;
         // Toggle Directional Light
         case 68: // D
@@ -621,7 +709,7 @@ function onKeyDown(e) {
             break;
 
         // Reset Scene
-        case 79: // o
+        case 79: // O
             resetPositions();
             break;
 
