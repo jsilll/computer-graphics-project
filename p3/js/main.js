@@ -700,7 +700,7 @@ function onKeyDown(e) {
             break;
 
         // Reset Scene TODO: add warning plane
-        case 79: // O
+        case 51: // '3'
             resetPositions();
             break;
 

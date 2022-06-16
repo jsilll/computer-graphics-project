@@ -24,7 +24,7 @@
 - [x] Modelar os holofotes geometricamente com duas primitivas, um cone e uma esfera
 
 ## Tarefa 5
-- [x] Usar uma imagem de papel origami como textura TODO: maybe trocar para outra textura para que se veja melhor
+- [ ] Usar uma imagem de papel origami como textura TODO: maybe trocar para outra textura para que se veja melhor
 
 ## Tarefa 6
 - [x] Definir uma câmera fixa com vista sobre toda a cena com proj. perspectiva
@@ -35,9 +35,9 @@
 ## Tarefa 7
 - [ ] Pausar a visualização quando o utilizador pressiona a 'space' e retomar ao pressionar o space outra vez. (TODO: neste momento isto tem um problema)
 - [ ] Mostrar uma mensagem no ecrã que deverá ser sempre legível, independentemente da posição da câmera e das dimensões do viewport (deve-se recorrer a uma segunda projecao ortogonal e um segundo viewport, esta projecao é independente da camera ativa).
-- [ ] Fazer o refresh da cena usando a tecla '3' 
-- [ ] Eventos de Redimensionamento da janela
-- [ ] reiniciar a cena sem ser necessário recarregar a aplicação
+- [x] Fazer o refresh da cena usando a tecla '3' 
+- [x] Eventos de Redimensionamento da janela
+- [x] reiniciar a cena sem ser necessário recarregar a aplicação
 
 ## Ajuda no 3o Trabalho
 
