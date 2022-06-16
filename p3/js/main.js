@@ -6,6 +6,11 @@ var cameras = new Array();
 
 //  ---------------- Object Variables ---------------- //
 
+var infoplane1;
+var infoplane2;
+
+//  ---------------- Object Variables ---------------- //
+
 var podium;
 var plane;
 
@@ -118,6 +123,29 @@ function createFloor() {
     mesh.rotation.x = - Math.PI / 2;
     mesh.receiveShadow = true;
 
+    scene.add(mesh);
+    return mesh;
+}
+
+function createInfoPlane(camera) {
+    var map = new THREE.TextureLoader().load('textures/paused_texture.png');
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
+    map.format = THREE.RGBAFormat;
+    map.repeat.set(16, 16);
+    map.anisotropy = 16;
+
+    const material = new THREE.MeshBasicMaterial({ map: map, transparent: true });
+
+    var geometry;
+    if (camera instanceof THREE.PerspectiveCamera) {
+        geometry = new THREE.PlaneGeometry(10, 10, 10, 10);
+    } else {
+        geometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight, 10, 10);
+    }
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.quaternion.copy(camera.quaternion);
+    mesh.position.set(camera.position.x, camera.position.y, camera.position.z);
+    mesh.position.z -= 2;
     scene.add(mesh);
     return mesh;
 }
@@ -427,8 +455,12 @@ function setupObjects() {
 function setupCameras() {
     'use strict';
     cameras.push(createPerspectiveCamera(0, 3, 13, scene.position));
+    infoplane1 = createInfoPlane(cameras[0]);
+    infoplane1.visible = false;
     // TODO: maybe mudar os tamanhos de todos os objetos para se ver alguma coisa com a camera ortogonal
     cameras.push(createOrthoCamera(0, 3, 15, scene.position));
+    infoplane2 = createInfoPlane(cameras[1]);
+    infoplane2.visible = false;
     camera = cameras[0];
 }
 
@@ -543,8 +575,12 @@ function toggleIlluminationCalculations() {
 function toggleAnimations() {
     if (animations_enabled) {
         clock.stop(); older_time_offset += clock.getElapsedTime() % (Math.PI * 2);
+        infoplane1.visible = true;
+        infoplane2.visible = true;
     } else {
         clock.start();
+        infoplane1.visible = false;
+        infoplane2.visible = false;
     }
     animations_enabled = !animations_enabled;
 }
