@@ -232,7 +232,6 @@ function createOrigami1(x, y, z) {
     obj.rotateX(Math.PI / 7);
     obj.receiveShadow = true;  // Shadows will show up on this object.
     obj.castShadow = true;
-    obj.userData = { PhongMaterial: [phongMaterialFront, phongMaterialBack], LambertMaterial: lambertMaterials }
 
     scene.add(obj);
     return obj;
@@ -246,15 +245,15 @@ function createOrigami2(x, y, z) {
 
     const uncolored_geometry = setGeometry(origami2_uncolored_vertices);
     const origami2_uncolored = new THREE.Mesh(uncolored_geometry, phongMaterialDoubleWhite);
+    origami2_uncolored.userData = { PhongMaterial: phongMaterialDoubleWhite, LambertMaterial: lambertMaterialDoubleWhite, BasicMaterial: basicMaterialDoubleWhite }
 
     const obj = new THREE.Group();
-    obj.add(origami2_colored);
-    obj.add(origami2_uncolored);
+    obj.add(origami2_colored); // grupo -> meshes já tês user data
+    obj.add(origami2_uncolored); // mesh -> tem user data
 
     obj.position.set(x, y, z);
     obj.rotateX(-Math.PI / 7);
     obj.castShadow = true;
-    obj.userData = { PhongMaterial: [phongMaterialFront, phongMaterialBack, phongMaterialDoubleWhite], LambertMaterial: [lambertMaterialFront, lambertMaterialBack, lambertMaterialDoubleWhite] }
 
     obj.receiveShadow = true;  // Shadows will show up on this object.
     scene.add(obj);
@@ -268,18 +267,21 @@ function createOrigami3(x, y, z) {
 
     const uncolored_geometry = setGeometry(origami3_uncolored_vertices);
     const origami3_uncolored = new THREE.Mesh(uncolored_geometry, phongMaterialDoubleWhite);
+    origami3_uncolored.userData = { PhongMaterial: phongMaterialDoubleWhite, LambertMaterial: lambertMaterialDoubleWhite, BasicMaterial: basicMaterialDoubleWhite }
 
     const doublesided_geometry = setGeometry(origami3_double_colored_vertices);
     const origami3_doublesided = new THREE.Mesh(doublesided_geometry, phongMaterialDoubleTexture);
+    origami3_doublesided.userData = { PhongMaterial: phongMaterialDoubleTexture, LambertMaterial: lambertMaterialDoubleTexture, BasicMaterial: basicMaterialDoubleTexture }
+
 
     const obj = new THREE.Group();
-    obj.add(origami3_colored);
-    obj.add(origami3_uncolored);
-    obj.add(origami3_doublesided);
+    obj.add(origami3_colored); // grupos -> meshes já têm user data
+    obj.add(origami3_uncolored); // mesh -> já tem user data
+    obj.add(origami3_doublesided); // mesh -> já tem user data
+
     obj.position.set(x, y, z);
     obj.castShadow = true;
     obj.receiveShadow = true;  // Shadows will show up on this object.
-    obj.userData = { PhongMaterial: [phongMaterialFront, phongMaterialBack, phongMaterialDoubleWhite, phongMaterialDoubleTexture], LambertMaterial: [lambertMaterialFront, lambertMaterialBack, lambertMaterialDoubleWhite, lambertMaterialDoubleTexture] }
 
     scene.add(obj);
     return obj;
@@ -538,10 +540,9 @@ function onKeyDown(e) {
         case 65: // A
             toggleAllMeshesMaterial();
             break;
-        // TODO: Toggle Illumnation Calculations & Animations
-        case 83: // S
-            toggleAnimations();
-            break;
+        // TODO: Toggle Illumnation Calculations
+        // case 83: // S
+        //     break;
         // Toggle Directional Light
         case 68: // D
             directional_light.intensity = directional_light.intensity == 0 ? directional_light_intensity : 0;
@@ -575,6 +576,10 @@ function onKeyDown(e) {
         case 52: // '4'
             updateDisplayType();
             break;
+        // Toggle Material
+        case 32: // ' '
+            toggleAnimations();
+            break;
     }
 }
 
@@ -602,11 +607,11 @@ function createMultiMaterialObject(geometry, frontMaterial, backMaterial) {
     var group = new THREE.Group();
 
     var meshFront = new THREE.Mesh(geometry, frontMaterial);
-    meshFront.userData = { PhongMaterial: frontMaterial, LambertMaterial: lambertMaterialFront }
+    meshFront.userData = { PhongMaterial: frontMaterial, LambertMaterial: lambertMaterialFront, BasicMaterial: basicMaterialFront }
     group.add(meshFront);
 
     var meshBack = new THREE.Mesh(geometry, backMaterial);
-    meshBack.userData = { PhongMaterial: backMaterial, LambertMaterial: lambertMaterialBack }
+    meshBack.userData = { PhongMaterial: backMaterial, LambertMaterial: lambertMaterialBack, BasicMaterial: basicMaterialBack }
     group.add(meshBack);
 
     return group;
