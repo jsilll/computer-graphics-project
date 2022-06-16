@@ -76,17 +76,26 @@ function setGeometry(vertices) {
     const positionNumComponents = 3;
     const normalNumComponents = 3;
     const uvNumComponents = 2;
-    geometry.setAttribute(
+    geometry.addAttribute(
         'position',
         new THREE.BufferAttribute(new Float32Array(positions), positionNumComponents));
-    geometry.setAttribute(
-        'normal',
-        new THREE.BufferAttribute(new Float32Array(normals), normalNumComponents));
-    geometry.setAttribute(
+    // geometry.addAttribute(
+    //     'normal',
+    //     new THREE.BufferAttribute(new Float32Array(normals), normalNumComponents));
+    geometry.addAttribute(
         'uv',
         new THREE.BufferAttribute(new Float32Array(uvs), uvNumComponents));
 
+    geometry.computeVertexNormals();
+
     return geometry;
+
+    // const geometry = new THREE.BufferGeometry();
+    // geometry.addAttribute('position', new THREE.BufferAttribute(vertices,3) );
+
+
+    //return geometry
+
 }
 
 function createFloor() {
@@ -239,194 +248,220 @@ function createOrigami1(x, y, z) {
 
     const vertices = [
         // front
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.5, 0, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [0, 1], },
+        { pos: [0.5, 0, 0], norm: [0, 0, 1], uv: [1, 1], },
 
-        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [-0.5, 0, 0.2], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [0, 1], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [-0.5, 0, 0.2], norm: [0, 0, 1], uv: [0, 0], },
+
     ];
 
     const geometry = setGeometry(vertices);
 
-    // TODO: posso usar double side ou cada lado é uma outra face? e se sim como as ponho de "costas" uma para a outra
     const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
-    texture.anisotropy = 16;
-    texture.encoding = THREE.sRGBEncoding;
-    const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture });
+    const materialFront = new THREE.MeshPhongMaterial({ side: THREE.FrontSide, map: texture });
+    const materialBack = new THREE.MeshPhongMaterial({ color: 0xffffff, side: THREE.BackSide });
+    var materials = [materialFront, materialBack];
 
-    origami1 = new THREE.Mesh(geometry, material);
-    origami1.position.set(x, y, z);
-    origami1.rotateX(Math.PI / 4);
-    origami1.castShadow = true;
-    origami1.userData = { PhongMaterial: new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, map: texture }) }
+    const obj = new THREE.SceneUtils.createMultiMaterialObject(geometry, materials);
 
-    scene.add(origami1);
+    obj.position.set(x, y, z);
+    obj.rotateY(Math.PI);
+    obj.rotateX(Math.PI / 7);
+    obj.receiveShadow = true;  // Shadows will show up on this object.
+    obj.castShadow = true;
+    obj.userData = { PhongMaterial: new THREE.MeshPhongMaterial(), LambertMaterial: new THREE.MeshLambertMaterial() }
 
-    return origami1;
+    scene.add(obj);
+
+    return obj;
+
 }
 function createOrigami2(x, y, z) {
     'use strict';
-    // TODO: Model This
-    const vertices = [
+    const colored_vertices = [
         // 1
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [-1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [0, 1], },
+        { pos: [-1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [0, 1 - 8 / 24], },
 
         // 2
-        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, 0.5, 0], norm: [0, 0, 1], uv: [0, 1], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [8 / 24, 1], },
 
-        // 3
-        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [-1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        // 8
+        { pos: [0, 5 / 24, -0.01], norm: [0, 0, 1], uv: [0, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [(-5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [0, 5 / 24], },
 
-        // 4
-        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [1, 0], },
-
-        // 7 confirmar
-        { pos: [0, 5 / 24, -0.01], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [(-5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-
-        // 8 confirmar
-        { pos: [0, 5 / 24, -0.01], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [(5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [1, 0], },
-
-        // 5
-        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [(5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [1, 0], },
+        // 7
+        { pos: [0, 5 / 24, -0.01], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [(5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [1 - 5 / 24, 1], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
 
         // 6
-        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [(-5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1 - 5 / 12, 1], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [(5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [1 - 5 / 24, 1], },
+
+        // 5
+        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [0, 5 / 12], },
+        { pos: [(-5 * Math.sqrt(0.5)) / 24, 5 / 24, 0], norm: [0, 0, 1], uv: [0, 5 / 24], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 0], },
 
     ];
 
-    const geometry = setGeometry(vertices);
+    const uncolored_vertices = [
+        // 3 - branco
+        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [-1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
 
-    // TODO: posso usar double side ou cada lado é uma outra face? e se sim como as ponho de "costas" uma para a outra
+        // 4 -branco
+        { pos: [0, 13 / 48, 0.01], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0, -0.5, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [1 / 6, 1 / 3, 0], norm: [0, 0, 1], uv: [1, 0], },
+    ];
+
+    const colored_geometry = setGeometry(colored_vertices);
     const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
-    texture.anisotropy = 16;
-    texture.encoding = THREE.sRGBEncoding;
-    const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture });
-    origami2 = new THREE.Mesh(geometry, material);
-    origami2.position.set(x, y, z);
-    origami2.castShadow = true;
-    origami2.userData = { PhongMaterial: material, LambertMaterial: new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, map: texture }) }
+    const materialFront = new THREE.MeshPhongMaterial({ side: THREE.FrontSide, map: texture });
+    const materialBack = new THREE.MeshPhongMaterial({ color: 0xffffff, side: THREE.BackSide });
+    const materials = [materialFront, materialBack];
 
-    scene.add(origami2);
-    return origami2;
+    const origami2_colored = new THREE.SceneUtils.createMultiMaterialObject(colored_geometry, materials);
+
+    const uncolored_geometry = setGeometry(uncolored_vertices);
+    const material = new THREE.MeshPhongMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+    const origami2_uncolored = new THREE.Mesh(uncolored_geometry, material);
+
+    const obj = new THREE.Group();
+    obj.add(origami2_colored);
+    obj.add(origami2_uncolored);
+
+    obj.position.set(x, y, z);
+    obj.rotateX(-Math.PI / 7);
+    obj.castShadow = true;
+    obj.userData = { PhongMaterial: material, LambertMaterial: new THREE.MeshLambertMaterial() }
+
+    obj.receiveShadow = true;  // Shadows will show up on this object.
+    scene.add(obj);
+    return obj;
+
 }
 
 function createOrigami3(x, y, z) {
     'use strict';
     // TODO: Model This
-    const vertices = [
-        // 1
-        { pos: [0, 0, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [1 / 12, 1 / 6, 0], norm: [0, 0, 1], uv: [0, 1], },
-        { pos: [-1 / 6, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
+    const colored_vertices = [
+        // 1 OK
+        { pos: [-0.1, 0, 0.1], norm: [0, 0, 1], uv: [0, 1 - 1 / 3], },
+        { pos: [-0.017, 1 / 6, 0], norm: [0, 0, 1], uv: [5 / 24, 1 - 5 / 24], },
+        { pos: [-0.27, 1 / 6, 0], norm: [0, 0, 1], uv: [0, 1], },
 
-        // 2
-        { pos: [0, 0, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.13, 0.018, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [1 / 12, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
+        // 3 OK
+        { pos: [0.03, 0.018, 0.101], norm: [0, 0, 1], uv: [0, 5 / 24], },
+        { pos: [0.24, 0.15, 0], norm: [0, 0, 1], uv: [1 / 3, 1 / 4], },
+        { pos: [-0.017, 1 / 6, 0], norm: [0, 0, 1], uv: [0, 5 / 12], },
 
-        // 3
-        { pos: [0.13, 0.018, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [1 / 12, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
-
-        // 4
-        { pos: [0.13, 0.018, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.29, 0.04, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
-
-        // 5
-        { pos: [0.29, 0.04, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.34, 0.15, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.2, 0.35, 0], norm: [0, 0, 1], uv: [1, 0], },
-
-        // 6
-        { pos: [0.29, 0.04, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.2, 0.35, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.13, 0.39, 0], norm: [0, 0, 1], uv: [1, 0], },
+        // 4 OK
+        { pos: [0.03, 0.018, 0.101], norm: [0, 0, 1], uv: [0, 5 / 24], },
+        { pos: [0.19, 0.04, 0.1], norm: [0, 0, 1], uv: [1 / 4, 1 / 8], },
+        { pos: [0.24, 0.15, 0], norm: [0, 0, 1], uv: [1 / 3, 1 / 4], },
 
         // 7
-        { pos: [0.13, 0.39, 0], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0.27, 0.31, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.16, 0.42, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.03, 0.39, 0.03], norm: [0, 0, 1], uv: [1 - 5 / 24, 1 / 24], },
+        { pos: [0.17, 0.4, 0], norm: [0, 0, 1], uv: [1, 0], },
+        { pos: [0.06, 0.42, 0], norm: [0, 0, 1], uv: [1 - 5 / 24, 1 / 12], },
 
-        // 8
-        { pos: [0.29, 0.04, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.34, 0.15, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
+        // 1 atras OK
+        { pos: [-0.1, 0, -0.1], norm: [0, 0, 1], uv: [1 / 3, 1], },
+        { pos: [-0.27, 1 / 6, 0], norm: [0, 0, 1], uv: [0, 1], },
+        { pos: [-0.017, 1 / 6, 0], norm: [0, 0, 1], uv: [5 / 24, 1 - 5 / 24], },
 
-        // 1 atras
-        { pos: [0, 0, -0.1], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [1 / 12, 1 / 6, 0], norm: [0, 0, 1], uv: [0, 1], },
-        { pos: [-1 / 6, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
+        // 3 atras OK
+        { pos: [0.03, 0.018, -0.101], norm: [0, 0, 1], uv: [1 - 5 / 24, 1], },
+        { pos: [-0.017, 1 / 6, 0], norm: [0, 0, 1], uv: [1 - 5 / 12, 1], },
+        { pos: [0.24, 0.15, 0], norm: [0, 0, 1], uv: [3 / 4, 2 / 3], },
 
-        // 2 atras
-        { pos: [0, 0, -0.1], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.13, 0.018, -0.1], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [1 / 12, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
-
-        // 3 atras
-        { pos: [0.13, 0.018, -0.1], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [1 / 12, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
-
-        // 4 atras
-        { pos: [0.13, 0.018, -0.1], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.29, 0.04, -0.1], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
-
-        // 5 atras
-        { pos: [0.29, 0.04, -0.1], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.34, 0.15, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.16, 0.42, -0.01], norm: [0, 0, 1], uv: [1, 0], },
-
-        // 6 atras
-        { pos: [0.29, 0.04, -0.1], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.16, 0.42, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.13, 0.39, -0.05], norm: [0, 0, 1], uv: [1, 0], },
+        // 4 atras OK
+        { pos: [0.03, 0.018, -0.101], norm: [0, 0, 1], uv: [1 - 5 / 24, 1], },
+        { pos: [0.24, 0.15, 0], norm: [0, 0, 1], uv: [3 / 4, 2 / 3], },
+        { pos: [0.19, 0.04, -0.1], norm: [0, 0, 1], uv: [7 / 8, 3 / 4], },
 
         // 7 atras
-        { pos: [0.13, 0.39, -0.05], norm: [0, 0, 1], uv: [1, 0], },
-        { pos: [0.27, 0.31, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.16, 0.42, 0], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [0.03, 0.39, -0.03], norm: [0, 0, 1], uv: [1 - 5 / 24, 1 / 24], },
+        { pos: [0.06, 0.42, 0], norm: [0, 0, 1], uv: [11 / 12, 5 / 24], },
+        { pos: [0.17, 0.4, 0], norm: [0, 0, 1], uv: [1, 0], },
 
-        // 8 atras
-        { pos: [0.29, 0.04, -0.1], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.34, 0.15, 0], norm: [0, 0, 1], uv: [1, 1], },
-        { pos: [0.24, 1 / 6, 0], norm: [0, 0, 1], uv: [1, 0], },
     ];
 
-    const geometry = setGeometry(vertices);
+    const uncolored_vertices = [
+        // 2 - branco
+        { pos: [-0.1, 0, 0.1], norm: [0, 0, 1], uv: [0.5, 0.5], },
+        { pos: [0.03, 0.018, 0.1], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [-0.017, 1 / 6, 0.001], norm: [0, 0, 1], uv: [1, 0], },
 
-    // TODO: posso usar double side ou cada lado é uma outra face? e se sim como as ponho de "costas" uma para a outra
+        // 2 atras - branco
+        { pos: [-0.1, 0, -0.1], norm: [0, 0, 1], uv: [0.5, 0.5], },
+        { pos: [0.03, 0.018, -0.1], norm: [0, 0, 1], uv: [1, 1], },
+        { pos: [-0.017, 1 / 6, 0.001], norm: [0, 0, 1], uv: [1, 0], },
+    ];
+
+    const doublesided_vertices = [
+        // 5 OK
+        { pos: [0.19, 0.04, 0.1], norm: [0, 0, 1], uv: [1 / 4, 1 / 8], },
+        { pos: [0.24, 0.15, 0], norm: [0, 0, 1], uv: [7 / 24, 0] },
+        { pos: [0.06, 0.42, 0], norm: [0, 0, 1], uv: [1 - 5 / 24, 0], },
+
+        // 6 OK
+        { pos: [0.19, 0.04, 0.1], norm: [0, 0, 1], uv: [1 / 4, 1 / 8], },
+        { pos: [0.06, 0.42, 0], norm: [0, 0, 1], uv: [1 - 5 / 24, 0], },
+        { pos: [0.03, 0.39, 0.03], norm: [0, 0, 1], uv: [1 - 5 / 24, 1 / 24], },
+
+        // 5 atras OK
+        { pos: [0.19, 0.04, -0.1], norm: [0, 0, 1], uv: [7 / 8, 3 / 4], },
+        { pos: [0.24, 0.15, 0], norm: [0, 0, 1], uv: [1, 1 - 7 / 24], },
+        { pos: [0.06, 0.42, 0], norm: [0, 0, 1], uv: [1, 5 / 24], },
+
+        // 6 atras OK
+        { pos: [0.19, 0.04, -0.1], norm: [0, 0, 1], uv: [7 / 8, 3 / 4], },
+        { pos: [0.06, 0.42, 0], norm: [0, 0, 1], uv: [1, 5 / 24], },
+        { pos: [0.03, 0.39, -0.03], norm: [0, 0, 1], uv: [23 / 24, 5 / 24], },
+    ];
+
+    const colored_geometry = setGeometry(colored_vertices);
     const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
-    texture.anisotropy = 16;
-    texture.encoding = THREE.sRGBEncoding;
-    const default_material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture });
-    origami3 = new THREE.Mesh(geometry, default_material);
-    origami3.position.set(x, y, z);
-    origami3.castShadow = true;
-    origami3.userData = { PhongMaterial: default_material, LambertMaterial: new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, map: texture }) }
+    const materialFront = new THREE.MeshPhongMaterial({ side: THREE.FrontSide, map: texture });
+    const materialBack = new THREE.MeshPhongMaterial({ color: 0xffffff, side: THREE.BackSide });
+    const materials = [materialFront, materialBack];
+    const origami3_colored = new THREE.SceneUtils.createMultiMaterialObject(colored_geometry, materials);
 
-    scene.add(origami3);
-    return origami3;
+
+    const uncolored_geometry = setGeometry(uncolored_vertices);
+    const materialWhite = new THREE.MeshPhongMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+    const origami3_uncolored = new THREE.Mesh(uncolored_geometry, materialWhite);
+
+    const doublesided_geometry = setGeometry(doublesided_vertices);
+    const materialDouble = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture });
+    const origami3_doublesided = new THREE.Mesh(doublesided_geometry, materialDouble);
+
+
+    const obj = new THREE.Group();
+    obj.add(origami3_colored);
+    obj.add(origami3_uncolored);
+    obj.add(origami3_doublesided);
+
+
+    obj.position.set(x, y, z);
+    obj.castShadow = true;
+    obj.receiveShadow = true;  // Shadows will show up on this object.
+    scene.add(obj);
+    return obj;
+
 }
 
 //  ---------------- Lights Creation ---------------- //
@@ -473,6 +508,7 @@ function init() {
     // Setting up renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
 
     // Objects, Lights and Cameras
@@ -616,9 +652,9 @@ function toggleAnimations() {
 function updateCameras() {
     'use strict';
     cameras.forEach((c) => {
-        if (c.isPerspectiveCamera) {
+        if (c.isPerspectiveCamera || c instanceof THREE.PerspectiveCamera) {
             c.aspect = window.innerWidth / window.innerHeight;
-        } else if (c.isOrthographicCamera) {
+        } else if (c.isOrthographicCamera || c instanceof THREE.OrthographicCamera) {
             c.left = window.innerWidth / - 2
             c.right = window.innerWidth / 2
             c.top = window.innerHeight / 2
