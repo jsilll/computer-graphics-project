@@ -27,16 +27,16 @@ var spotlightobj3;
 const ambient_light_intensity = 2.33;
 
 const spotlights_height = 4;
-const spotlights_intensity = 2;
+const spotlights_intensity = 5;
 const spotlights_penumbra = 0.33;
 const spotlights_color = 0x404040;
-const spotlights_spread_angle = Math.PI / 12;
+const spotlights_spread_angle = Math.PI / 8;
 
 var spotlight1;
 var spotlight2;
 var spotlight3;
 
-const directional_light_intensity = 0.2;
+const directional_light_intensity = 3;
 const directional_light_color = 0x404040;
 
 var directional_light;
@@ -298,8 +298,6 @@ function createOrigami1(x, y, z) {
     obj.position.set(x, y, z);
     obj.rotateY(Math.PI);
     obj.rotateX(Math.PI / 7);
-    obj.receiveShadow = true;  // Shadows will show up on this object.
-    obj.castShadow = true;
 
     scene.add(obj);
     return obj;
@@ -318,6 +316,7 @@ function createOrigami2(x, y, z) {
         LambertMaterial: lambertMaterialDoubleWhite,
         BasicMaterial: basicMaterialDoubleWhite
     }
+    origami2_uncolored.castShadow = true;
 
     const obj = new THREE.Group();
     obj.add(origami2_colored); // grupo -> meshes já tês user data
@@ -325,9 +324,7 @@ function createOrigami2(x, y, z) {
 
     obj.position.set(x, y, z);
     obj.rotateX(-Math.PI / 7);
-    obj.castShadow = true;
 
-    obj.receiveShadow = true;  // Shadows will show up on this object.
     scene.add(obj);
     return obj;
 }
@@ -344,6 +341,7 @@ function createOrigami3(x, y, z) {
         LambertMaterial: lambertMaterialDoubleWhite,
         BasicMaterial: basicMaterialDoubleWhite
     }
+    origami3_uncolored.castShadow = true;
 
     const doublesided_geometry = setGeometry(origami3_double_colored_vertices);
     const origami3_doublesided = new THREE.Mesh(doublesided_geometry, phongMaterialDoubleTexture);
@@ -352,7 +350,7 @@ function createOrigami3(x, y, z) {
         LambertMaterial: lambertMaterialDoubleTexture,
         BasicMaterial: basicMaterialDoubleTexture
     }
-
+    origami3_doublesided.castShadow = true;
 
     const obj = new THREE.Group();
     obj.add(origami3_colored); // grupos -> meshes já têm user data
@@ -360,8 +358,6 @@ function createOrigami3(x, y, z) {
     obj.add(origami3_doublesided); // mesh -> já tem user data
 
     obj.position.set(x, y, z);
-    obj.castShadow = true;
-    obj.receiveShadow = true;  // Shadows will show up on this object.
 
     scene.add(obj);
     return obj;
@@ -373,7 +369,7 @@ function setupLights() {
     'use strict';
     // Directional Light
     directional_light = new THREE.DirectionalLight(directional_light_color, directional_light_intensity);
-    directional_light.position.set(10, 10, 10);
+    directional_light.position.set(0, 5, 3);
     scene.add(directional_light);
 
     // SpotLight 1
@@ -404,7 +400,7 @@ function setupLights() {
     scene.add(spotlight3);
 
     // Ambient Light
-    scene.add(new THREE.AmbientLight(0x404040, ambient_light_intensity));
+    // scene.add(new THREE.AmbientLight(0x404040, ambient_light_intensity));
 }
 
 //  ---------------- Three.js Functions ---------------- //
@@ -479,7 +475,7 @@ function setupCameras() {
 function updatePositions() {
     'use strict';
     if (animations_enabled) {
-        const delta = clock.getDelta();
+        const delta = clock.getDelta() * 2;
         Object.keys(origami1_controller).forEach((key) => {
             if (origami1_controller[key].pressed) {
                 origami1_controller[key].rotate(origami1, delta);
@@ -742,10 +738,12 @@ function createMultiMaterialObject(geometry, frontMaterial, backMaterial) {
 
     var meshFront = new THREE.Mesh(geometry, frontMaterial);
     meshFront.userData = { PhongMaterial: frontMaterial, LambertMaterial: lambertMaterialFront, BasicMaterial: basicMaterialFront }
+    meshFront.castShadow = true;
     group.add(meshFront);
 
     var meshBack = new THREE.Mesh(geometry, backMaterial);
     meshBack.userData = { PhongMaterial: backMaterial, LambertMaterial: lambertMaterialBack, BasicMaterial: basicMaterialBack }
+    meshBack.castShadow = true;
     group.add(meshBack);
 
     return group;
