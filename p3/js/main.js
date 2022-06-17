@@ -293,6 +293,7 @@ function createSpotLightObject(x, y, z) {
 function createOrigami1(x, y, z) {
     'use strict';
     const geometry = setGeometry(origami1_vertices);
+    // creates two meshes -> one with texture for the front and other plain for the back
     const obj = new createMultiMaterialObject(geometry, phongMaterialFront, phongMaterialBack);
 
     obj.position.set(x, y, z);
@@ -305,10 +306,11 @@ function createOrigami1(x, y, z) {
 function createOrigami2(x, y, z) {
     'use strict';
 
+    // faces with texture on the front and plain on the back
     const colored_geometry = setGeometry(origami2_colored_vertices);
-
     const origami2_colored = createMultiMaterialObject(colored_geometry, phongMaterialFront, phongMaterialBack);
 
+    // plain faces
     const uncolored_geometry = setGeometry(origami2_uncolored_vertices);
     const origami2_uncolored = new THREE.Mesh(uncolored_geometry, phongMaterialDoubleWhite);
     origami2_uncolored.userData = {
@@ -319,8 +321,8 @@ function createOrigami2(x, y, z) {
     origami2_uncolored.castShadow = true;
 
     const obj = new THREE.Group();
-    obj.add(origami2_colored); // grupo -> meshes já tês user data
-    obj.add(origami2_uncolored); // mesh -> tem user data
+    obj.add(origami2_colored);
+    obj.add(origami2_uncolored);
 
     obj.position.set(x, y, z);
     obj.rotateX(-Math.PI / 7);
@@ -331,9 +333,12 @@ function createOrigami2(x, y, z) {
 
 function createOrigami3(x, y, z) {
     'use strict';
+
+    // faces with texture on the front and plain on the back
     const colored_geometry = setGeometry(origami3_colored_vertices);
     const origami3_colored = createMultiMaterialObject(colored_geometry, phongMaterialFront, phongMaterialBack);
-
+    
+    // plain faces
     const uncolored_geometry = setGeometry(origami3_uncolored_vertices);
     const origami3_uncolored = new THREE.Mesh(uncolored_geometry, phongMaterialDoubleWhite);
     origami3_uncolored.userData = {
@@ -343,6 +348,7 @@ function createOrigami3(x, y, z) {
     }
     origami3_uncolored.castShadow = true;
 
+    // faces with texture on both sides
     const doublesided_geometry = setGeometry(origami3_double_colored_vertices);
     const origami3_doublesided = new THREE.Mesh(doublesided_geometry, phongMaterialDoubleTexture);
     origami3_doublesided.userData = {
@@ -353,9 +359,9 @@ function createOrigami3(x, y, z) {
     origami3_doublesided.castShadow = true;
 
     const obj = new THREE.Group();
-    obj.add(origami3_colored); // grupos -> meshes já têm user data
-    obj.add(origami3_uncolored); // mesh -> já tem user data
-    obj.add(origami3_doublesided); // mesh -> já tem user data
+    obj.add(origami3_colored);
+    obj.add(origami3_uncolored);
+    obj.add(origami3_doublesided);
 
     obj.position.set(x, y, z);
 
@@ -399,8 +405,6 @@ function setupLights() {
     spotlight3.penumbra = spotlights_penumbra;
     scene.add(spotlight3);
 
-    // Ambient Light
-    // scene.add(new THREE.AmbientLight(0x404040, ambient_light_intensity));
 }
 
 //  ---------------- Three.js Functions ---------------- //
@@ -463,10 +467,12 @@ function setupCameras() {
     cameras.push(createPerspectiveCamera(0, 4, 13, scene.position));
     infoplane1 = createInfoPlane(cameras[0]);
     infoplane1.visible = false;
-    // TODO: maybe mudar os tamanhos de todos os objetos para se ver alguma coisa com a camera ortogonal
+
     cameras.push(createOrthoCamera(0, 0, 15, scene.position));
     infoplane2 = createInfoPlane(cameras[1]);
     infoplane2.visible = false;
+
+    // default camera
     camera = cameras[0];
 }
 
@@ -518,6 +524,7 @@ function updateDisplayType() {
 function toggleAllMeshesMaterial() {
     const objects = [origami1, origami2, origami3, podium, plane, spotlightobj1, spotlightobj2, spotlightobj3];
 
+    // search for meshes object's children
     function toggleObject3DMaterial(object3D) {
         object3D.children.forEach((obj) => {
             if (obj instanceof THREE.Mesh) {
@@ -534,6 +541,7 @@ function toggleAllMeshesMaterial() {
     }
 
     objects.forEach((obj) => {
+        // if it is a mesh, toggle materials
         if (obj instanceof THREE.Mesh) {
             if (obj.material instanceof THREE.MeshPhongMaterial) {
                 obj.material = obj.userData.LambertMaterial;
@@ -541,12 +549,14 @@ function toggleAllMeshesMaterial() {
             else {
                 obj.material = obj.userData.PhongMaterial;
             }
+        // if is not a mesh, search for meshes on children
         } else {
             toggleObject3DMaterial(obj);
         }
     });
 }
 
+// toggle to basic material
 function toggleIlluminationCalculations() {
     const objects = [origami1, origami2, origami3, podium, plane, spotlightobj1, spotlightobj2, spotlightobj3];
 
@@ -577,7 +587,6 @@ function toggleIlluminationCalculations() {
     });
 }
 
-// TODO: É possivel deslocar os objetos de sitio se carregarmos no pause em comprimentos de onda certos
 function toggleAnimations() {
     if (animations_enabled) {
         clock.stop(); older_time_offset += clock.getElapsedTime() % (Math.PI * 2);
@@ -661,7 +670,7 @@ function onKeyDown(e) {
         case 65: // A
             toggleAllMeshesMaterial();
             break;
-        // TODO: Toggle Illumnation Calculations
+        // Toggle Illumnation Calculations
         case 83: // S
             toggleIlluminationCalculations();
             break;
@@ -696,8 +705,7 @@ function onKeyDown(e) {
             }
             camera = cameras[1];
             break;
-
-        // Reset Scene TODO: add warning plane
+        // Reset Scene
         case 51: // '3'
             resetPositions();
             break;
