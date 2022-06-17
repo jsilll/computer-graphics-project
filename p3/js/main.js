@@ -460,7 +460,7 @@ function setupObjects() {
 
 function setupCameras() {
     'use strict';
-    cameras.push(createPerspectiveCamera(0, 3, 13, scene.position));
+    cameras.push(createPerspectiveCamera(0, 4, 13, scene.position));
     infoplane1 = createInfoPlane(cameras[0]);
     infoplane1.visible = false;
     // TODO: maybe mudar os tamanhos de todos os objetos para se ver alguma coisa com a camera ortogonal
