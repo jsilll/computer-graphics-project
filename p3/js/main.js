@@ -50,18 +50,18 @@ var animations_enabled = true;
 const rotation_speed = THREE.Math.degToRad(60);
 
 const origami1_controller = {
-    81: { pressed: false, rotate: (obj, delta) => (obj.rotateY(-rotation_speed * delta)) },  // q
-    87: { pressed: false, rotate: (obj, delta) => (obj.rotateY(rotation_speed * delta)) }, // w
+    81: { pressed: false, rotate: (obj, delta) => (obj.rotation.y -= rotation_speed * delta) },  // q
+    87: { pressed: false, rotate: (obj, delta) => (obj.rotation.y += rotation_speed * delta) }, // w
 }
 
 const origami2_controller = {
-    69: { pressed: false, rotate: (obj, delta) => (obj.rotateY(-rotation_speed * delta)) },  // e
-    82: { pressed: false, rotate: (obj, delta) => (obj.rotateY(rotation_speed * delta)) }, // r
+    69: { pressed: false, rotate: (obj, delta) => (obj.rotation.y -= rotation_speed * delta) },  // e
+    82: { pressed: false, rotate: (obj, delta) => (obj.rotation.y += rotation_speed * delta) }, // r
 }
 
 const origami3_controller = {
-    84: { pressed: false, rotate: (obj, delta) => (obj.rotateY(-rotation_speed * delta)) },  // t
-    89: { pressed: false, rotate: (obj, delta) => (obj.rotateY(rotation_speed * delta)) }, // y
+    84: { pressed: false, rotate: (obj, delta) => (obj.rotation.y -= rotation_speed * delta) },  // t
+    89: { pressed: false, rotate: (obj, delta) => (obj.rotation.y += rotation_speed * delta) }, // y
 }
 
 //  ---------------- Animation Variables ---------------- //
@@ -337,7 +337,7 @@ function createOrigami3(x, y, z) {
     // faces with texture on the front and plain on the back
     const colored_geometry = setGeometry(origami3_colored_vertices);
     const origami3_colored = createMultiMaterialObject(colored_geometry, phongMaterialFront, phongMaterialBack);
-    
+
     // plain faces
     const uncolored_geometry = setGeometry(origami3_uncolored_vertices);
     const origami3_uncolored = new THREE.Mesh(uncolored_geometry, phongMaterialDoubleWhite);
@@ -549,7 +549,7 @@ function toggleAllMeshesMaterial() {
             else {
                 obj.material = obj.userData.PhongMaterial;
             }
-        // if is not a mesh, search for meshes on children
+            // if is not a mesh, search for meshes on children
         } else {
             toggleObject3DMaterial(obj);
         }
