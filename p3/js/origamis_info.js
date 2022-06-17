@@ -1,11 +1,14 @@
-const texture = new THREE.TextureLoader().load('textures/origami_texture2.jpg');
+const texture = new THREE.TextureLoader().load('textures/origami_texture.jpg');
 
+//  ---------------- Materials ---------------- //
+/* Phong Materials */
 const phongMaterialFront = new THREE.MeshPhongMaterial({side : THREE.FrontSide, map: texture});
 const phongMaterialBack = new THREE.MeshPhongMaterial({color : 0xffffff, side : THREE.BackSide});
 
 const phongMaterialDoubleWhite = new THREE.MeshPhongMaterial({color : 0xffffff, side : THREE.DoubleSide});
 const phongMaterialDoubleTexture = new THREE.MeshPhongMaterial({side : THREE.DoubleSide, map: texture});
 
+/* Lambert Materials */
 const lambertMaterialFront = new THREE.MeshLambertMaterial({side : THREE.FrontSide, map: texture});
 const lambertMaterialBack = new THREE.MeshLambertMaterial({color : 0xffffff, side : THREE.BackSide});
 const lambertMaterials = [lambertMaterialFront, lambertMaterialBack];
@@ -13,6 +16,7 @@ const lambertMaterials = [lambertMaterialFront, lambertMaterialBack];
 const lambertMaterialDoubleWhite = new THREE.MeshLambertMaterial({color : 0xffffff, side : THREE.DoubleSide});
 const lambertMaterialDoubleTexture = new THREE.MeshLambertMaterial({side : THREE.DoubleSide, map: texture});
 
+/* Basic Materials */
 const basicMaterialFront = new THREE.MeshBasicMaterial({side : THREE.FrontSide, map: texture});
 const basicMaterialBack = new THREE.MeshBasicMaterial({color : 0xffffff, side : THREE.BackSide});
 const basicMaterials = [basicMaterialFront, basicMaterialBack];
@@ -20,6 +24,11 @@ const basicMaterials = [basicMaterialFront, basicMaterialBack];
 const basicMaterialDoubleWhite = new THREE.MeshBasicMaterial({color : 0xffffff, side : THREE.DoubleSide});
 const basicMaterialDoubleTexture = new THREE.MeshBasicMaterial({side : THREE.DoubleSide, map: texture});
 
+//  ---------------- Origami Vertices ---------------- //
+/* See drawings to understand the faces' labels */
+
+
+/* Origami1 vertices */
 const origami1_vertices = [
     // left
     { pos: [0, -0.7,  0], uv: [1, 0], },
@@ -33,6 +42,7 @@ const origami1_vertices = [
 
 ];
 
+/* Origami2 vertices */
 const origami2_colored_vertices = [
     // 1
     { pos: [0, -0.6,  0], uv: [1,0], },
@@ -78,6 +88,7 @@ const origami2_uncolored_vertices = [
     { pos: [0.26, 0.43,  0], uv: [1, 0], },
 ];
 
+/* Origami3 vertices */
 const origami3_colored_vertices = [
     // 1
     { pos: [-0.2, -0.2,  0.2], uv: [0, 1 - 1/3], },
